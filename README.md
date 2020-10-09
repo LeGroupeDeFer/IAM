@@ -23,7 +23,7 @@ The migrations, backend and frontend logs can be respectively found in `migratio
 Prerequisites:
 1. Have a [Java Runtime Environment](https://www.java.com/en/download/) version 8 or superior;
 2. Have [SBT](https://www.scala-sbt.org/download.html) installed;
-3. Have a [Flyway Community Edition](https://flywaydb.org/download/) installed;
+3. Have [Flyway Community Edition](https://flywaydb.org/download/) installed;
 4. Have [NodeJS](https://nodejs.org/en/download/) and NPM installed;
 5. Have a [MySQL](https://www.mysql.com/downloads/) or [MariaDB](https://mariadb.org/download/) server available.
 
@@ -43,7 +43,7 @@ Where variables are replaced with the chosen installation details.
 cd ${PROJECT_ROOT}/backend
 sbt run
 ```
-If everything was setup properly, you should not be able to reach the website at [localhost:8000](http://localhost:8000)
+If everything was setup properly, you should now be able to reach the website at [localhost:8000](http://localhost:8000)
 
 ### Compiling frontend assets
 
