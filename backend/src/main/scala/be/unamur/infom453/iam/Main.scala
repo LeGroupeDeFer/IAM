@@ -9,6 +9,7 @@ import io.finch.catsEffect._
 import io.finch.circe._
 import io.circe.generic.auto._
 
+
 object Main extends App {
 
   case class Message(hello: String)
@@ -30,5 +31,5 @@ object Main extends App {
     .serve[Application.Json](helloWorld :+: hello)
     .toService
 
-  Await.ready(Http.server.serve(":8081", service))
+  Await.ready(Http.server.serve(":8000", service))
 }

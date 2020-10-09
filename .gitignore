@@ -28,5 +28,9 @@ build
 .cache
 .cache-main
 
-#general
+# general
 *.class
+
+# ide
+.metals
+.vscode
