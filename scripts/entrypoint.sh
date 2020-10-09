@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 set -eu
 
@@ -47,11 +47,12 @@ backend() {
 frontend() {
   log "Starting JS watch..."
   
-  #cd frontend
-  #npm ci
-  #npm run watch > frontend.log 2>&1
-  #echo $! > /tmp/frontend.pid
-  #cd ..
+  cd frontend
+  npm ci
+  npm run dev > frontend.log 2>&1 &
+  echo $! > /tmp/frontend.pid
+  cd ..
+  cp -R frontend/public/. backend/src/main/resources/
 }
 
 # TRAPS
@@ -74,14 +75,24 @@ trap cleanup SIGTERM
 # RELOADER
 reload() {
   log "Starting reloader..."
-  inotifywait -m -r -e create -e modify -e move -e delete --format "%w%f %e" backend/src | while read FILE EVENT; do
-    log "Change (${EVENT}) to ${FILE} detected, reloading..."
-    if [ -f /tmp/backend.pid ]; then
+  inotifywait -m -r -e create -e modify -e move -e delete --format "%w %f %e" . \
+  | while read DIR FILE EVENT; do
+
+    log "Change (${EVENT}) to ${DIR}${FILE} detected..."
+    
+    # If there is a change to backend files, recompile
+    if [[ $DIR =~ ^\./backend/src/main/scala/.* ]]; then
+      if [ -f /tmp/backend.pid ]; then
         log "Terminating backend..."
         PID=$(cat /tmp/backend.pid)
         safe_kill $PID
+      fi
+      backend
+    # If there is a change to frontend assets, copy those for backend access
+    elif [[ $DIR =~ ^\./frontend/public/.* ]]; then
+      cp -R frontend/public/. backend/src/main/resources/
     fi
-    backend
+
   done
 }
 

@@ -4,6 +4,7 @@ bin/
 project/
 target/
 build/
+resources/
 
 # eclipse
 build
@@ -30,6 +31,10 @@ build
 
 # general
 *.class
+
+# js
+node_modules/
+public/build/
 
 # ide
 .metals

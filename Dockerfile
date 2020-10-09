@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-ENV DEPS="libressl bash wget zlib-dev openjdk11-jre inotify-tools" \
+ENV DEPS="libressl bash wget zlib-dev openjdk11-jre inotify-tools npm" \
     DUMB_INIT_VERSION=1.2.2 \
     SBT_VERSION=1.4.0 \
     FLYWAY_VERSION=7.0.1
@@ -27,9 +27,6 @@ RUN mkdir -p /usr/local/flyway \
  && ln -s /usr/local/flyway/flyway /usr/local/bin \
  && rm -rf /usr/local/flyway/jre \
  && ln -s /usr/lib/jvm/java-11-openjdk /usr/local/flyway/jre
-
-# Node
-# TODO
 
 # tz
 RUN apk add --update --no-cache tzdata \
