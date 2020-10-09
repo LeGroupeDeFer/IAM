@@ -22,7 +22,7 @@ The migrations, backend and frontend logs can be respectively found in `migratio
 
 Prerequisites:
 1. Have a [Java Runtime Environment](https://www.java.com/en/download/) version 8 or superior;
-2. Have [SBT](https://www.scala-sbt.org/download.html) installed.
+2. Have [SBT](https://www.scala-sbt.org/download.html) installed;
 3. Have a [Flyway Community Edition](https://flywaydb.org/download/) installed;
 4. Have [NodeJS](https://nodejs.org/en/download/) and NPM installed;
 5. Have a [MySQL](https://www.mysql.com/downloads/) or [MariaDB](https://mariadb.org/download/) server available.
