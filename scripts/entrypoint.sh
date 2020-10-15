@@ -10,13 +10,13 @@ log() {
 }
 
 safe_kill() {
-    PID=$1
-    ps -o pid | grep "$PID" >/dev/null
-    if [ ! $? -eq 0 ]; then
-        log "WARNING: Process was not shutdown properly"
-    else
-        kill -9 $PID
-    fi
+  PID=$1
+  ps -o pid | grep "$PID" >/dev/null
+  if [ ! $? -eq 0 ]; then
+    log "WARNING: Process was not shutdown properly"
+  else
+    kill -9 $PID
+  fi
 }
 
 # Migrations
@@ -25,11 +25,11 @@ migrate() {
 
   cd backend
   flyway migrate \
-    -url="jdbc:${DB_DRIVER}://${DB_HOST}:${DB_PORT}/${DB_DATABASE}"\
-    -user=${DB_USER} \
-    -password=${DB_PASSWORD} \
-    -locations="filesystem:/usr/src/app/backend/migrations" > migrations.log 2>&1
-
+   -url="jdbc:${DB_DRIVER}://${DB_HOST}:${DB_PORT}/${DB_DATABASE}"\
+   -user=${DB_USER} \
+   -password=${DB_PASSWORD} \
+   -locations="filesystem:/usr/src/app/backend/migrations" > migrations.log 2>&1
+  
   cd ..
 }
 
@@ -57,15 +57,15 @@ frontend() {
 
 # TRAPS
 cleanup() {
-    if [ -f /tmp/backend.pid ]; then
-      kill -9 $(cat /tmp/backend.pid)
-      rm /tmp/backend.pid
-    fi
-    if [ -f /tmp/frontend.pid ]; then
-      kill -9 $(cat /tmp/frontend.pid)
-      rm /tmp/frontend.pid
-    fi
-    exit 0
+  if [ -f /tmp/backend.pid ]; then
+    kill -9 $(cat /tmp/backend.pid)
+    rm /tmp/backend.pid
+  fi
+  if [ -f /tmp/frontend.pid ]; then
+    kill -9 $(cat /tmp/frontend.pid)
+    rm /tmp/frontend.pid
+  fi
+  exit 0
 }
 
 trap cleanup SIGINT

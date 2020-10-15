@@ -39,3 +39,6 @@ public/build/
 # ide
 .metals
 .vscode
+
+# runtime
+log/

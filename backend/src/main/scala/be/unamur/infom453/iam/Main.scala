@@ -1,16 +1,24 @@
 package be.unamur.infom453.iam
 
-import cats.effect._
-import cats.effect.internals.IOContextShift
-import com.twitter.finagle.{Http}
-import com.twitter.util.Await
+import wvlet.airframe.http.finagle._
 
+object Main extends App {
 
-object Main extends scala.App {
+  def store(): Map[String, String] = Map(
+    "DB_HOST"     -> "127.0.0.1",
+    "DB_PORT"     -> "3306",
+    "DB_DATABASE" -> "iam",
+    "DB_USER"     -> "iam",
+    "DB_PASSWORD" -> "secret"
+  ) ++ sys.env
 
-  implicit def contextShift: ContextShift[IO] = IOContextShift.global
-
-  val app = new App()
-  Await.ready(Http.server.serve(":8000", app.service))
+  Finagle.server
+    .withName("IAM")
+    .withPort(8000)
+    .withRouter(controllers.routes)
+    .start(server => {
+      server.waitServerTermination
+      Configuration.database.shutdown
+    })
 
 }

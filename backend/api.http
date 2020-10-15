@@ -1,0 +1,21 @@
+POST http://localhost:8000/api/auth/login
+Accept: application/json
+Cache-Control: no-cache
+
+{ "username": "John", "password": "secret" }
+
+###
+
+POST http://localhost:8000/api/auth/login
+Accept: application/json
+Cache-Control: no-cache
+
+{ "username": "admin", "password": "secret" }
+
+###
+
+POST http://localhost:8000/api/auth/logout
+Accept: application/json
+Cache-Control: no-cache
+
+{ "username": "admin" }

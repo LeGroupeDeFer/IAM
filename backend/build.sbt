@@ -1,6 +1,10 @@
-val finchVersion = "0.26.0"
-val circeVersion = "0.10.1"
-val scalatestVersion = "3.0.5"
+val airFrameHttpVersion   = "20.10.0"
+val slickVersion          = "3.3.3"
+val slf4jVersion          = "1.6.4"
+val slickHikaricpVersion  = "3.3.3"
+val scalatestVersion      = "3.0.5"
+val mysqlConnectorVersion = "6.0.6"
+val bcryptVersion         = "4.1"
 
 lazy val root = (project in file("."))
   .settings(
@@ -9,9 +13,12 @@ lazy val root = (project in file("."))
     version := "0.0.1-SNAPSHOT",
     scalaVersion := "2.12.7",
     libraryDependencies ++= Seq(
-      "com.github.finagle" %% "finchx-core"  % finchVersion,
-      "com.github.finagle" %% "finchx-circe"  % finchVersion,
-      "io.circe" %% "circe-generic" % circeVersion,
-      "org.scalatest"      %% "scalatest"    % scalatestVersion % "test"
+      "org.wvlet.airframe" %% "airframe-http-finagle" % (airFrameHttpVersion),
+      "org.scalatest"      %% "scalatest"             % scalatestVersion % "test",
+      "com.typesafe.slick" %% "slick"                 % slickVersion,
+      "org.slf4j"           % "slf4j-nop"             % slf4jVersion,
+      "com.typesafe.slick" %% "slick-hikaricp"        % slickHikaricpVersion,
+      "mysql"               % "mysql-connector-java"  % mysqlConnectorVersion,
+      "com.github.t3hnar"  %% "scala-bcrypt"          % bcryptVersion
     )
   )

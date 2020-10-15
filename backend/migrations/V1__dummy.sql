@@ -1,6 +1,0 @@
-CREATE TABLE dummy (
-  id      INT UNSIGNED    NOT NULL AUTO_INCREMENT,
-  thing   VARCHAR(10)     NULL,
-
-  PRIMARY KEY(id)
-);
