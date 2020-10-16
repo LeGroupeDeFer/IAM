@@ -16,7 +16,7 @@ object Configuration extends FinagleFilter {
       "DB_USER"     -> "iam",
       "DB_PASSWORD" -> "secret",
 
-      "JWT_SECRET" -> "secret",
+      "JWT_ACCESS_KEY" -> "secret",
       "JWT_ACCESS_LIFETIME" -> (5 * 60).toString,
       "JWT_REFRESH_LIFETIME" -> (14 * 24 * 60 * 60).toString
     ) ++ sys.env
@@ -28,6 +28,7 @@ object Configuration extends FinagleFilter {
     store + ("DB_URI" -> s"jdbc:mysql://${host}:${port}/${schema}")
   }
 
+  // Not used yet
   def apply(request: Request, context: Configuration.Context): Future[Response] = {
     context.setThreadLocal("configuration", store)
     context(request)

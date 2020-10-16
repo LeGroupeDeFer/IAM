@@ -5,6 +5,8 @@ object CanTable {
 
   import api._
 
+  /* ------------------------ ORM class definition ------------------------ */
+
   case class Can(id: Option[Int], latitude: Double, longitude: Double, publicKey: String)
 
   class Cans(tag: Tag) extends Table[Can](tag, "cans") {
@@ -21,5 +23,7 @@ object CanTable {
   }
 
   val cans = TableQuery[Cans]
+
+  /* --------------------- ORM Manipulation functions --------------------- */
 
 }

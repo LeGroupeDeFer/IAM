@@ -77,11 +77,10 @@ reload() {
   log "Starting reloader..."
   inotifywait -m -r -e create -e modify -e move -e delete --format "%w %f %e" . \
   | while read DIR FILE EVENT; do
-
-    log "Change (${EVENT}) to ${DIR}${FILE} detected..."
     
     # If there is a change to backend files, recompile
     if [[ $DIR =~ ^\./backend/src/main/scala/.* ]]; then
+      log "Change (${EVENT}) to ${DIR}${FILE} detected..."
       if [ -f /tmp/backend.pid ]; then
         log "Terminating backend..."
         PID=$(cat /tmp/backend.pid)
@@ -90,6 +89,7 @@ reload() {
       backend
     # If there is a change to frontend assets, copy those for backend access
     elif [[ $DIR =~ ^\./frontend/public/.* ]]; then
+      log "Change (${EVENT}) to ${DIR}${FILE} detected..."
       cp -R frontend/public/. backend/src/main/resources/
     fi
 

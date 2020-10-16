@@ -1,3 +1,4 @@
+# @name register
 POST http://localhost:8000/api/auth/register
 Accept: application/json
 Cache-Control: no-cache
@@ -6,27 +7,45 @@ Cache-Control: no-cache
 
 ###
 
+# @name loginSuccess
 POST http://localhost:8000/api/auth/login
 Accept: application/json
 Cache-Control: no-cache
 
 { "username": "john", "password": "secret" }
 
+
 ###
 
+# @name loginFailure
+POST http://localhost:8000/api/auth/login
+Accept: application/json
+Cache-Control: no-cache
+
+{ "username": "john", "password": "definitelynotthesecret" }
+
+###
+
+@refreshToken = {{loginSuccess.response.body.$.token}}
+
+# @name refreshSuccess
 POST http://localhost:8000/api/auth/refresh
 Accept: application/json
 Cache-Control: no-cache
 
-{ "username": "john", "token": "UcBkpBRwKsAlN55E5WAGGyseivnaiSjv" }
+{ "username": "john", "token": "{{refreshToken}}" }
+
 
 ###
 
+@refreshToken = {{loginSuccess.response.body.$.token}}
+
+# @name logoutSuccess
 POST http://localhost:8000/api/auth/logout
 Accept: application/json
 Cache-Control: no-cache
 
-{ "username": "john", "token": "UcBkpBRwKsAlN55E5WAGGyseivnaiSjv" }
+{ "username": "john", "token": "{{refreshToken}}" }
 
 
 

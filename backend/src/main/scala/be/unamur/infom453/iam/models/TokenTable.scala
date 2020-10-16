@@ -2,45 +2,51 @@ package be.unamur.infom453.iam.models
 
 import java.sql.Timestamp
 import java.time.LocalDateTime
+
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
-import be.unamur.infom453.iam.lib.ErrorResponse._
+import be.unamur.infom453.iam.lib._
 
 
 object TokenTable {
 
+  val seed = Random.alphanumeric.take(32).mkString
   import api._
 
-  val seed = Random.alphanumeric
-  def nowTimestamp = Timestamp valueOf LocalDateTime.now()
-  def afterTimestamp(seconds: Long) = Timestamp valueOf (LocalDateTime.now() plusSeconds seconds)
+  /* ------------------------ ORM class definition ------------------------ */
 
-  case class Token(id: Option[Int], hash: String, creationDate: Timestamp, expirationDate: Option[Timestamp]) {
+  case class Token(
+    id: Option[Int],
+    hash: String,
+    creationDate: Timestamp,
+    expirationDate: Option[Timestamp]
+  ) {
+    def verify(given: String): Boolean =
+      given == hash
 
-    def verify(given: String): Boolean = given == hash
-
-    def ttl: Long = expirationDate match {
-      case Some(timestamp) => timestamp.getTime - nowTimestamp.getTime
-      case None => 0
-    }
+    def ttl: Long = expirationDate
+      .map(_.getTime - timestampNow().getTime)
+      .getOrElse(0)
 
     def renew(lifetime: Long)(
       implicit ec: ExecutionContext,
       db: Database
     ): Future[Token] = {
+      if (this.ttl > lifetime / 2)
+        return Future(this)
+
       val query = for (
         token <- tokens if token.id === id
       ) yield (token.hash, token.expirationDate)
 
-      val newExpiration = afterTimestamp(lifetime)
-      val newHash = (seed take 32) mkString
+      val newExpiration = timestampAfter(lifetime)
+      val newHash = seed
       val update = query.update((newHash, newExpiration))
 
       db.run(update)
         .map(_ => Token(id, newHash, creationDate, Some(newExpiration)))
         .recoverWith { case _: Exception => throw updateError}
     }
-
   }
 
   class Tokens(tag: Tag) extends Table[Token](tag, "tokens") {
@@ -58,6 +64,8 @@ object TokenTable {
 
   val tokens = TableQuery[Tokens]
 
+  /* --------------------- ORM Manipulation functions --------------------- */
+
   def create(lifetime: Long)(
     implicit ec: ExecutionContext,
     db: Database
@@ -67,7 +75,7 @@ object TokenTable {
     val expirationDateTime = creationDateTime plusSeconds lifetime
     val creationDate = Timestamp valueOf creationDateTime
     val expirationDate = Timestamp valueOf expirationDateTime
-    val hash: String = seed take 32 mkString
+    val hash: String = seed
 
     // Create a token
     val token = Token(None, hash, creationDate, Some(expirationDate))

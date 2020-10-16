@@ -17,11 +17,11 @@ package object models {
     driver="com.mysql.cj.jdbc.Driver"
   )
 
-  type Token = TokenTable.Token
-  val tokens = TokenTable.tokens
-
   type User = UserTable.User
   val users = UserTable.users
+
+  type Token = TokenTable.Token
+  val tokens = TokenTable.tokens
 
   type Can = CanTable.Can
   val cans = CanTable.cans
