@@ -1,3 +1,11 @@
+# @name apiTest
+
+GET http://localhost:8000/api/noodles
+Accept: text/plain
+Cache-Control: no-cache
+
+### 
+
 # @name register
 POST http://localhost:8000/api/auth/register
 Accept: application/json
@@ -48,4 +56,21 @@ Cache-Control: no-cache
 { "username": "john", "token": "{{refreshToken}}" }
 
 
+###
 
+@accessToken = {{refreshSuccess.response.body.$.access}}
+
+# @name adminFailed
+GET http://localhost:8000/api/admin/noodles
+Accept: text/plain
+Cache-Control: no-cache
+
+###
+
+@accessToken = {{refreshSuccess.response.body.$.access}}
+
+# @name adminSuccess
+GET http://localhost:8000/api/admin/noodles
+Accept: text/plain
+Cache-Control: no-cache
+Authorization: Bearer {{accessToken}}

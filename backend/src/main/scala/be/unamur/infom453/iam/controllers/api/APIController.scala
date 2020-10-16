@@ -12,7 +12,7 @@ object APIController {
 trait APIController {
 
   @Endpoint(method=HttpMethod.GET, path = "/noodles")
-  def noodles() = "noodles"
+  def noodles = "You single-handedly fought your way into this hopeless mess."
 
 }
 

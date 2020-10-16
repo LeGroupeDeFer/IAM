@@ -1,7 +1,7 @@
 package be.unamur.infom453.iam
 
 import java.sql.Timestamp
-import java.time.{LocalDateTime, ZoneOffset}
+import java.time.{Clock, Instant, ZoneOffset}
 
 import com.twitter.{util => twitter}
 import org.mindrot.jbcrypt.BCrypt
@@ -15,10 +15,11 @@ package object lib {
 
   /* --------------------- Global & global implicits ---------------------- */
 
-  implicit val ec: ExecutionContext = global
-  implicit val api = models.api // TODO Annotation
-  implicit val db: models.api.Database = models.db
-  implicit val zoneOffset: ZoneOffset = ZoneOffset.UTC
+  implicit val ec: ExecutionContext       = global
+  implicit val api /* TODO Annotation */  = models.api
+  implicit val db: models.api.Database    = models.db
+  implicit val zoneOffset: ZoneOffset     = ZoneOffset.UTC
+  implicit val clock: Clock               = Clock.systemUTC
 
   val insertionError    = new Exception("Unable to insert")
   val updateError       = new Exception("Unable to update")
@@ -28,15 +29,30 @@ package object lib {
   val invalidToken      = new Exception("Invalid token")
   val usernameTaken     = new Exception("Username in use")
 
+  case class TokenException(
+    private val message: String,
+    private val cause: Throwable = None.orNull
+  ) extends Exception
+
+  val expiredToken: TokenException    = TokenException("This token has expired")
+  val malformedToken: TokenException  = TokenException("Malformed token")
+  val absentToken: TokenException     = TokenException("Token was not provided")
+
   /* -------------------------- Utils functions --------------------------- */
 
   import api._
 
+  def now(implicit clock: Clock): Instant =
+    clock.instant
+
+  def after(seconds: Long)(implicit clock: Clock): Instant =
+    now.plusSeconds(seconds)
+
   def timestampNow(): Timestamp =
-    Timestamp.valueOf(LocalDateTime.now(zoneOffset))
+    Timestamp.from(now)
 
   def timestampAfter(seconds: Long): Timestamp =
-    Timestamp.valueOf(LocalDateTime.now(zoneOffset) plusSeconds seconds)
+    Timestamp.from(after(seconds))
 
   def singleOption[A, B](query: Query[A, B, Seq])(
     implicit ec: ExecutionContext,
@@ -81,7 +97,8 @@ package object lib {
   /* -------------------------- Database related -------------------------- */
 
   object Hash {
-    def of(pw: String) = Hash(BCrypt.hashpw(pw, BCrypt.gensalt()))
+    def of(pw: String): Hash =
+      Hash(BCrypt.hashpw(pw, BCrypt.gensalt()))
   }
 
   case class Hash(value: String) extends MappedTo[String] {

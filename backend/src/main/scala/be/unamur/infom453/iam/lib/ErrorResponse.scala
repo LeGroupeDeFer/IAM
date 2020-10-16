@@ -11,7 +11,7 @@ object ErrorResponse {
 
   def recover[A](code: Int): PartialFunction[Throwable, Future[A]] =
     new PartialFunction[Throwable, Future[A]] {
-      def apply(e: Throwable) = ErrorResponse(code, e).future[A]
+      def apply(e: Throwable): Future[A] = ErrorResponse(code, e).future[A]
       override def isDefinedAt(x: Throwable): Boolean = x.isInstanceOf[Exception]
     }
 

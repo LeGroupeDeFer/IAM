@@ -1,28 +1,42 @@
 package be.unamur.infom453.iam.lib
 
+
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
+import scala.util.matching.Regex
+import com.twitter.finagle.http.{Request, Response, Status}
+import com.twitter.util.{Future => TwitterFuture}
+import wvlet.airframe.http.finagle.FinagleFilter
 import pdi.jwt.{JwtAlgorithm, JwtCirce, JwtClaim}
+import pdi.jwt.algorithms.JwtHmacAlgorithm
 import be.unamur.infom453.iam.Configuration.store
 import be.unamur.infom453.iam.models._
 import be.unamur.infom453.iam.models.UserTable.User
 
 
-object Auth {
+/**
+ * The Auth object represents a dual token authentication. The first token,
+ * the '''refresh token''', is delivered on login and is meant to be long
+ * lived. Its sole purpose is to permit the user to request a short lived
+ * '''access token'''. The access token is a '''JSON Web Token''' claim,
+ * meant to be used for resource protection and identity validation.
+ */
+object Auth extends FinagleFilter {
+
+  /* TODO Find a simple way to add users */
 
   import api._
 
-  val jwtRefreshLifetime  = store("JWT_REFRESH_LIFETIME").toLong
-  val jwtAccessLifetime   = store("JWT_ACCESS_LIFETIME").toLong
-  val jwtAccessKey        = store("JWT_ACCESS_KEY")
-  val jwtAccessAlgorithm  = JwtAlgorithm.HS256
+  val jwtRefreshLifetime:   Long              = store("JWT_REFRESH_LIFETIME").toLong
+  val jwtAccessLifetime:    Long              = store("JWT_ACCESS_LIFETIME").toLong
+  val jwtAccessKey:         String            = store("JWT_ACCESS_KEY")
+  val jwtAccessAlgorithm:   JwtHmacAlgorithm  = JwtAlgorithm.HS256
+  val bearerAuthentication: Regex             = "Bearer (.+)".r
 
-  private def issueAccessToken: String = {
-    val now = timestampNow().getTime / 1000
-    val claim = JwtClaim(
-        issuer = Some("IAM"),
-        issuedAt = Some(now),
-        expiration = Some(now + jwtAccessLifetime)
-    )
+  private def issueAccessToken(subject: String): String = {
+    val claim = JwtClaim(issuer = Some("IAM"), subject = Some(subject))
+      .startsNow
+      .expiresIn(jwtAccessLifetime)
     JwtCirce.encode(claim, jwtAccessKey, jwtAccessAlgorithm)
   }
 
@@ -87,9 +101,12 @@ object Auth {
     implicit ec: ExecutionContext,
     db: Database
   ): Future[Unit] = for {
-    _ <- single(users.filter(_.username === username))
-    expirationDate = tokens.filter(_.hash === hash).map(_.expirationDate)
-    _ <- db.run(expirationDate.update(timestampNow())).map(_ => ())
+    user <- single(users.filter(_.username === username))
+    expirationDate = tokens
+      .filter(token => token.id === user.refreshTokenId)
+      .filter(_.hash === hash)
+      .map(_.expirationDate)
+    _ <- db.run(expirationDate.update(timestampNow()))
   } yield ()
 
   /**
@@ -116,7 +133,39 @@ object Auth {
     for {
       token <- tokenRetrieval if token.verify(hash) && token.ttl > 0
       refresh <- token.renew(jwtRefreshLifetime)
-    } yield (refresh.hash, issueAccessToken)
+    } yield (refresh.hash, issueAccessToken(username))
+  }
+
+  /* --------------------------- Finagle Filter ---------------------------- */
+
+  private def authenticate(token: String): Try[JwtClaim] = Try {
+    val now = timestampNow().getTime / 1000
+    val claim = JwtCirce
+      .decode(token, jwtAccessKey, Seq(jwtAccessAlgorithm))
+      .getOrElse { throw malformedToken }
+
+    if (claim.expiration.getOrElse(0.toLong) <= now)
+      throw expiredToken
+    else
+      claim
+  }
+
+  private def authenticated(request: Request): Try[JwtClaim] = Try {
+    request.authorization match {
+      case Some(bearerAuthentication(token)) => authenticate(token).get
+      case None => throw absentToken
+    }
+  }
+
+  override def apply(request: Request, context: Auth.Context): TwitterFuture[Response] = {
+    try {
+      val token = authenticated(request).get
+      context.setThreadLocal("token", token)
+      context(request)
+    } catch {
+      case _: TokenException => TwitterFuture.value(Response(Status.Unauthorized))
+      case e: Throwable => throw e //TwitterFuture.value(Response(Status.InternalServerError))
+    }
   }
 
 }
