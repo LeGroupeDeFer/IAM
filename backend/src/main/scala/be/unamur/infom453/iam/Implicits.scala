@@ -10,10 +10,8 @@ import scala.util.{Failure, Success, Try}
 object Implicits {
 
   implicit val ec = global
-
-  implicit val api = Configuration.driver.api
-
-  implicit val db = Configuration.database
+  implicit val api = models.api
+  implicit val db = models.db
 
   /*
    * Set of conversions meant to ease the translation from Twitter/Scala

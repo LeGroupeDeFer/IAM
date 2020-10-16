@@ -4,7 +4,8 @@ val slf4jVersion          = "1.6.4"
 val slickHikaricpVersion  = "3.3.3"
 val scalatestVersion      = "3.0.5"
 val mysqlConnectorVersion = "6.0.6"
-val bcryptVersion         = "4.1"
+val bcryptVersion         = "0.4"
+val jwtVersion            = "4.2.0"
 
 lazy val root = (project in file("."))
   .settings(
@@ -19,6 +20,7 @@ lazy val root = (project in file("."))
       "org.slf4j"           % "slf4j-nop"             % slf4jVersion,
       "com.typesafe.slick" %% "slick-hikaricp"        % slickHikaricpVersion,
       "mysql"               % "mysql-connector-java"  % mysqlConnectorVersion,
-      "com.github.t3hnar"  %% "scala-bcrypt"          % bcryptVersion
+      "org.mindrot"         % "jbcrypt"               % bcryptVersion,
+      "com.pauldijou"      %% "jwt-circe"             % jwtVersion
     )
   )

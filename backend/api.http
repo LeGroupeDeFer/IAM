@@ -1,8 +1,8 @@
-POST http://localhost:8000/api/auth/login
+POST http://localhost:8000/api/auth/register
 Accept: application/json
 Cache-Control: no-cache
 
-{ "username": "John", "password": "secret" }
+{ "username": "john", "password": "secret" }
 
 ###
 
@@ -10,7 +10,15 @@ POST http://localhost:8000/api/auth/login
 Accept: application/json
 Cache-Control: no-cache
 
-{ "username": "admin", "password": "secret" }
+{ "username": "john", "password": "secret" }
+
+###
+
+POST http://localhost:8000/api/auth/refresh
+Accept: application/json
+Cache-Control: no-cache
+
+{ "username": "john", "token": "UcBkpBRwKsAlN55E5WAGGyseivnaiSjv" }
 
 ###
 
@@ -18,4 +26,7 @@ POST http://localhost:8000/api/auth/logout
 Accept: application/json
 Cache-Control: no-cache
 
-{ "username": "admin" }
+{ "username": "john", "token": "UcBkpBRwKsAlN55E5WAGGyseivnaiSjv" }
+
+
+

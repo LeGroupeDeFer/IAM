@@ -3,11 +3,11 @@ package be.unamur.infom453.iam.controllers
 import wvlet.airframe.http.{Endpoint, Router, StaticContent}
 
 
-object Static {
-  val routes: Router = Router.add[Static]
+object StaticController {
+  val routes: Router = Router.of[StaticController]
 }
 
-trait Static {
+trait StaticController {
 
   @Endpoint(path="/")
   def index() = content("index.html")

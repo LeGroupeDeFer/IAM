@@ -1,19 +1,29 @@
 package be.unamur.infom453.iam
 
-import be.unamur.infom453.iam.Configuration.driver
+import be.unamur.infom453.iam.Configuration.store
 
 
 package object models {
 
   // Expose everything needed for db manipulations here (to facilitate imports)
 
-  val api = driver.api
-  implicit val db = Configuration.database
+  implicit val api = slick.jdbc.MySQLProfile.api
+  import api._
 
-  type User = be.unamur.infom453.iam.models.UserTable.User
-  val users = be.unamur.infom453.iam.models.UserTable.users
+  implicit val db = Database.forURL(
+    store("DB_URI"),
+    store("DB_USER"),
+    store("DB_PASSWORD"),
+    driver="com.mysql.cj.jdbc.Driver"
+  )
 
-  type Can = be.unamur.infom453.iam.models.CanTable.Can
-  val cans = be.unamur.infom453.iam.models.CanTable.cans
+  type Token = TokenTable.Token
+  val tokens = TokenTable.tokens
+
+  type User = UserTable.User
+  val users = UserTable.users
+
+  type Can = CanTable.Can
+  val cans = CanTable.cans
 
 }

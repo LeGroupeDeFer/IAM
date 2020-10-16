@@ -1,10 +1,9 @@
 package be.unamur.infom453.iam.models
 
-import be.unamur.infom453.iam.Configuration.driver
 
 object CanTable {
 
-  import driver.api._
+  import api._
 
   case class Can(id: Option[Int], latitude: Double, longitude: Double, publicKey: String)
 

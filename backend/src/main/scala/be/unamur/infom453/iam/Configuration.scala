@@ -8,16 +8,17 @@ import wvlet.airframe.http.finagle.FinagleFilter
 // The filter part is not used yet (and may not be used at all)
 object Configuration extends FinagleFilter {
 
-  val driver = slick.jdbc.MySQLProfile
-  import driver.api._
-
   val store: Map[String, String] = {
     val store = Map(
       "DB_HOST"     -> "127.0.0.1",
       "DB_PORT"     -> "3306",
       "DB_DATABASE" -> "iam",
       "DB_USER"     -> "iam",
-      "DB_PASSWORD" -> "secret"
+      "DB_PASSWORD" -> "secret",
+
+      "JWT_SECRET" -> "secret",
+      "JWT_ACCESS_LIFETIME" -> (5 * 60).toString,
+      "JWT_REFRESH_LIFETIME" -> (14 * 24 * 60 * 60).toString
     ) ++ sys.env
 
     val host = store("DB_HOST")
@@ -26,13 +27,6 @@ object Configuration extends FinagleFilter {
 
     store + ("DB_URI" -> s"jdbc:mysql://${host}:${port}/${schema}")
   }
-
-  implicit val database = Database.forURL(
-    store("DB_URI"),
-    store("DB_USER"),
-    store("DB_PASSWORD"),
-    driver="com.mysql.cj.jdbc.Driver"
-  )
 
   def apply(request: Request, context: Configuration.Context): Future[Response] = {
     context.setThreadLocal("configuration", store)

@@ -18,7 +18,7 @@ object Main extends App {
     .withRouter(controllers.routes)
     .start(server => {
       server.waitServerTermination
-      Configuration.database.shutdown
+      models.db.shutdown
     })
 
 }
