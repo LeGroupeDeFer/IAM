@@ -1,5 +1,6 @@
 package be.unamur.infom453.iam
 
+import java.io.File
 import java.sql.Timestamp
 import java.time.{Clock, Instant, ZoneOffset}
 
@@ -63,6 +64,10 @@ package object lib {
     implicit ec: ExecutionContext,
     db: Database
   ): Future[B] = db.run(query.result.head)
+
+  def jarDirectory: String = new File(
+    getClass.getProtectionDomain.getCodeSource.getLocation.toURI
+  ).getParent
 
   /* ------------------------ Implicit conversions ------------------------ */
 

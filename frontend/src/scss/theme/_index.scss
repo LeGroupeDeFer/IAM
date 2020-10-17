@@ -1,0 +1,15 @@
+// https://coolors.co/ca2e55-ffe0b5-8a6552-462521-bdb246
+
+@forward '../../../node_modules/bootstrap/scss/bootstrap.scss' with (
+  $body-bg: #E8DDCB,
+  $theme-colors: (
+    "primary":  #031634,
+    "secondary": #462521,
+    "ternary": #8A6552,
+  )
+);
+
+*::selection {
+  color: #8A6552;
+  background-color: #462521;
+}

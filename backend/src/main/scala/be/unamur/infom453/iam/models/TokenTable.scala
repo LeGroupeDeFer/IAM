@@ -10,7 +10,7 @@ import be.unamur.infom453.iam.lib._
 
 object TokenTable {
 
-  val seed = Random.alphanumeric.take(32).mkString
+  def seed: String = Random.alphanumeric.take(32).mkString
   import api._
 
   /* ------------------------ ORM class definition ------------------------ */

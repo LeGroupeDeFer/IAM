@@ -6,13 +6,15 @@ val scalatestVersion      = "3.0.5"
 val mysqlConnectorVersion = "6.0.6"
 val bcryptVersion         = "0.4"
 val jwtVersion            = "4.2.0"
+val iamScalaVersion       = sys.env.get("SCALA_VERSION").getOrElse("2.12.7")
+
 
 lazy val root = (project in file("."))
   .settings(
     organization := "be.unamur.infom453",
     name := "iam",
     version := "0.0.1-SNAPSHOT",
-    scalaVersion := "2.12.7",
+    scalaVersion := iamScalaVersion,
     libraryDependencies ++= Seq(
       "org.wvlet.airframe" %% "airframe-http-finagle" % (airFrameHttpVersion),
       "org.scalatest"      %% "scalatest"             % scalatestVersion % "test",

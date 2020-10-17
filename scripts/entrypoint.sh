@@ -2,6 +2,10 @@
 
 set -eu
 
+SCALA_MAJOR_VERSION=$(echo $SCALA_VERSION | sed -E "s/([0-9]+)\.([0-9]+)\.([0-9]+)/\1.\2/")
+SBT_JAR_DIR="/usr/src/app/backend/target/scala-${SCALA_MAJOR_VERSION}/"
+ASSETS_DIR="${SBT_JAR_DIR}/assets"
+
 cd /usr/src/app/
 
 # UTILS
@@ -33,26 +37,49 @@ migrate() {
   cd ..
 }
 
-# Scala
+# SBT
 backend() {
-  log "Starting Finch server..."
+  log "Starting SBT watch..."
+  
+  if [ -f /tmp/backend.pid ]; then
+    safe_kill $(cat /tmp/backend.pid)
+    rm /tmp/backend.pid
+  fi
 
   cd backend
-  sbt run > ../backend.log 2>&1 &
+
+  # Export the classpath
+  sbt ~reStart > ../backend.log 2>&1 &
   echo $! > /tmp/backend.pid
   cd ..
 }
 
-# JS
+# ROLLUP
 frontend() {
   log "Starting JS watch..."
-  
+  mkdir -p $ASSETS_DIR
+
+  if [ -f /tmp/frontend.pid ]; then
+    safe_kill $(cat /tmp/frontend.pid)
+    rm /tmp/frontend.pid
+  fi
+
   cd frontend
   npm ci
-  npm run dev > frontend.log 2>&1 &
+  npm run dev > ../frontend.log 2>&1 &
   echo $! > /tmp/frontend.pid
   cd ..
-  cp -R frontend/public/. backend/src/main/resources/
+  cp -R frontend/public/. ${ASSETS_DIR}/
+}
+
+# RELOADER
+reload() {
+  log "Starting reloader..."
+  inotifywait -m -r -e create -e modify -e move -e delete --format "%w %f %e" frontend/public \
+  | while read DIR FILE EVENT; do
+    log "Change (${EVENT}) to ${DIR}${FILE} detected..."
+    cp -R frontend/public/. ${ASSETS_DIR}/
+  done
 }
 
 # TRAPS
@@ -68,34 +95,6 @@ cleanup() {
   exit 0
 }
 
-trap cleanup SIGINT
-trap cleanup SIGQUIT
-trap cleanup SIGTERM
-
-# RELOADER
-reload() {
-  log "Starting reloader..."
-  inotifywait -m -r -e create -e modify -e move -e delete --format "%w %f %e" . \
-  | while read DIR FILE EVENT; do
-    
-    # If there is a change to backend files, recompile
-    if [[ $DIR =~ ^\./backend/src/main/scala/.* ]]; then
-      log "Change (${EVENT}) to ${DIR}${FILE} detected..."
-      if [ -f /tmp/backend.pid ]; then
-        log "Terminating backend..."
-        PID=$(cat /tmp/backend.pid)
-        safe_kill $PID
-      fi
-      backend
-    # If there is a change to frontend assets, copy those for backend access
-    elif [[ $DIR =~ ^\./frontend/public/.* ]]; then
-      log "Change (${EVENT}) to ${DIR}${FILE} detected..."
-      cp -R frontend/public/. backend/src/main/resources/
-    fi
-
-  done
-}
-
 # MAIN
 main() {
   migrate
@@ -103,5 +102,9 @@ main() {
   frontend
   reload
 }
+
+trap cleanup SIGINT
+trap cleanup SIGQUIT
+trap cleanup SIGTERM
 
 main
