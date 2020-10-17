@@ -64,6 +64,12 @@ package object lib {
     db: Database
   ): Future[B] = db.run(query.result.head)
 
+  def queryAll[A, B, C[_]](query: Query[A, B, C])(
+    implicit ec: ExecutionContext,
+    db: Database
+  ): Future[C[B]] =
+    db.run(query.result)
+
   /* ------------------------ Implicit conversions ------------------------ */
 
   // ScalaTry[T] -> TwitterTry[T]

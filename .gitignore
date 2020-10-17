@@ -5,6 +5,7 @@ project/
 target/
 build/
 resources/
+backend/.bsp
 
 # eclipse
 build
