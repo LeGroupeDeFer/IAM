@@ -65,9 +65,16 @@ package object lib {
     db: Database
   ): Future[B] = db.run(query.result.head)
 
+
   def jarDirectory: String = new File(
     getClass.getProtectionDomain.getCodeSource.getLocation.toURI
   ).getParent
+
+  def queryAll[A, B, C[_]](query: Query[A, B, C])(
+    implicit ec: ExecutionContext,
+    db: Database
+  ): Future[C[B]] =
+    db.run(query.result)
 
   /* ------------------------ Implicit conversions ------------------------ */
 

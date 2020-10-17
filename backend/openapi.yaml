@@ -188,7 +188,7 @@ paths:
       tags:
         - admin
         - can
-  '/can/{id}/info':
+  '/can/{id}':
     parameters:
       - schema:
           type: string
