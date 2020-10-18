@@ -4,7 +4,7 @@ GET http://localhost:8000/api/noodles
 Accept: text/plain
 Cache-Control: no-cache
 
-### 
+### ----------------------------------------------------------------- REGISTER
 
 # @name register
 POST http://localhost:8000/api/auth/register
@@ -13,7 +13,8 @@ Cache-Control: no-cache
 
 { "username": "john", "password": "secret" }
 
-###
+
+### ------------------------------------------------------------ LOGIN SUCCESS
 
 # @name loginSuccess
 POST http://localhost:8000/api/auth/login
@@ -23,7 +24,7 @@ Cache-Control: no-cache
 { "username": "john", "password": "secret" }
 
 
-###
+### ------------------------------------------------------------ LOGIN FAILURE
 
 # @name loginFailure
 POST http://localhost:8000/api/auth/login
@@ -32,7 +33,8 @@ Cache-Control: no-cache
 
 { "username": "john", "password": "definitelynotthesecret" }
 
-###
+
+### ---------------------------------------------------------- REFRESH SUCCESS
 
 @refreshToken = {{loginSuccess.response.body.$.token}}
 
@@ -43,34 +45,80 @@ Cache-Control: no-cache
 
 { "username": "john", "token": "{{refreshToken}}" }
 
+### ----------------------------------------------- CONSECUTIVE REFRESH SUCCESS
 
-###
+@consecutiveRefreshToken = {{refreshSuccess.response.body.$.refresh}}
 
-@refreshToken = {{loginSuccess.response.body.$.token}}
+# @name consecutiveRefreshSuccess
+POST http://localhost:8000/api/auth/refresh
+Accept: application/json
+Cache-Control: no-cache
+
+{ "username": "john", "token": "{{consecutiveRefreshToken}}" }
+
+
+### ---------------------------------------------------------- REFRESH FAILURE
+
+# @name refreshFailure
+POST http://localhost:8000/api/auth/refresh
+Accept: application/json
+Cache-Control: no-cache
+
+{ "username": "john", "token": "whatever" }
+
+
+### ----------------------------------------------------------- LOGOUT SUCCESS
+
+@logoutRefreshToken = {{consecutiveRefreshSuccess.response.body.$.refresh}}
 
 # @name logoutSuccess
 POST http://localhost:8000/api/auth/logout
 Accept: application/json
 Cache-Control: no-cache
 
-{ "username": "john", "token": "{{refreshToken}}" }
+{ "username": "john", "token": "{{logoutRefreshToken}}" }
 
 
-###
+### ----------------------------------------------------------- LOGOUT FAILURE
 
-@accessToken = {{refreshSuccess.response.body.$.access}}
-
-# @name adminFailed
-GET http://localhost:8000/api/admin/noodles
-Accept: text/plain
+# @name logoutSuccess
+POST http://localhost:8000/api/auth/logout
+Accept: application/json
 Cache-Control: no-cache
 
-###
+{ "username": "john", "token": "whatever" }
 
-@accessToken = {{refreshSuccess.response.body.$.access}}
+
+### ------------------------------------------------------------ ADMIN SUCCESS
+
+@accessToken = {{consecutiveRefreshSuccess.response.body.$.access}}
 
 # @name adminSuccess
 GET http://localhost:8000/api/admin/noodles
 Accept: text/plain
 Cache-Control: no-cache
 Authorization: Bearer {{accessToken}}
+
+
+### ------------------------------------------------------------ ADMIN FAILURE
+
+# @name adminFailure
+GET http://localhost:8000/api/admin/noodles
+Accept: text/plain
+Cache-Control: no-cache
+
+
+### --------------------------------------------------------------------- CANS
+
+# @name cans
+GET http://localhost:8000/api/cans
+Accept: text/plain
+Cache-Control: no-cache
+
+
+### ----------------------------------------------------------------- THAT CAN
+
+# @name can
+GET http://localhost:8000/api/can/abc
+Accept: text/plain
+Cache-Control: no-cache

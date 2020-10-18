@@ -1,17 +1,18 @@
 package be.unamur.infom453.iam.lib
 
 
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
-import scala.util.matching.Regex
+import be.unamur.infom453.iam.Configuration.store
+import be.unamur.infom453.iam.models.UserTable.User
+import be.unamur.infom453.iam.models._
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.util.{Future => TwitterFuture}
-import wvlet.airframe.http.finagle.FinagleFilter
-import pdi.jwt.{JwtAlgorithm, JwtCirce, JwtClaim}
 import pdi.jwt.algorithms.JwtHmacAlgorithm
-import be.unamur.infom453.iam.Configuration.store
-import be.unamur.infom453.iam.models._
-import be.unamur.infom453.iam.models.UserTable.User
+import pdi.jwt.{JwtAlgorithm, JwtCirce, JwtClaim}
+import wvlet.airframe.http.finagle.FinagleFilter
+
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.matching.Regex
+import scala.util.{Random, Try}
 
 
 /**
@@ -26,38 +27,34 @@ object Auth extends FinagleFilter {
   /* TODO Find a simple way to add users */
 
   import api._
+  import extensions._
 
-  val jwtRefreshLifetime:   Long              = store("JWT_REFRESH_LIFETIME").toLong
-  val jwtAccessLifetime:    Long              = store("JWT_ACCESS_LIFETIME").toLong
-  val jwtAccessKey:         String            = store("JWT_ACCESS_KEY")
-  val jwtAccessAlgorithm:   JwtHmacAlgorithm  = JwtAlgorithm.HS256
-  val bearerAuthentication: Regex             = "Bearer (.+)".r
-
-  private def issueAccessToken(subject: String): String = {
-    val claim = JwtClaim(issuer = Some("IAM"), subject = Some(subject))
-      .startsNow
-      .expiresIn(jwtAccessLifetime)
-    JwtCirce.encode(claim, jwtAccessKey, jwtAccessAlgorithm)
-  }
+  val jwtRefreshLifetime: Long = store("JWT_REFRESH_LIFETIME").toLong
+  val jwtAccessLifetime: Long = store("JWT_ACCESS_LIFETIME").toLong
+  val jwtAccessKey: String = store("JWT_ACCESS_KEY")
+  val jwtAccessAlgorithm: JwtHmacAlgorithm = JwtAlgorithm.HS256
+  val bearerAuthentication: Regex = "Bearer (.+)".r
 
   /**
    * Given a username and a password, create and save a User.
    *
    * @param username The user name
    * @param password The user password
-   * @param ec The execution context on which database IO and futures should be
-   *           computed
-   * @param db The database on which to operate
+   * @param ec       The execution context on which database IO and futures should be
+   *                 computed
+   * @param db       The database on which to operate
    * @return The created user
    */
   def register(username: String, password: String)(
     implicit ec: ExecutionContext,
     db: Database
-  ): Future[User] = for {
-    token <- TokenTable.create(jwtRefreshLifetime)
-    id <- db.run(users += User(None, username, Hash.of(password), token.id.get))
-    user <- db.run(users.filter(_.id === id).result.head)
-  } yield user
+  ): Future[User] = {
+    val hash = Hash.of(password)
+    for {
+      tokenId <- tokens.insert(0).execute
+      userId <- users.insert(User(None, username, hash, tokenId)).execute
+    } yield User(Some(userId), username, hash, tokenId)
+  }
 
   /**
    * Given a username and a password, verifies that the user exists, that the
@@ -66,24 +63,23 @@ object Auth extends FinagleFilter {
    *
    * @param username The user name
    * @param password The user password
-   * @param ec The execution context on which database IO and futures should be
-   *           computed
-   * @param db The database on which to operate
+   * @param ec       The execution context on which database IO and futures should be
+   *                 computed
+   * @param db       The database on which to operate
    * @return The refresh token hash
    */
   def login(username: String, password: String)(
     implicit ec: ExecutionContext,
     db: Database
-  ): Future[String] = {
-    val retrieval = single(for {
-      user <- users if user.username === username
-      token <- user.refreshToken
-    } yield (user, token))
-
+  ): Future[String] = try {
+    val refreshHash = seed
     for {
-      (user, token) <- retrieval if user.password.check(password)
-      renewed <- token.renew(jwtRefreshLifetime)
-    } yield renewed.hash
+      user <- users.withUsername(username).one if user.password == password
+      _ <- tokens.withId(user.refreshTokenId).renew(refreshHash, jwtRefreshLifetime).execute
+      hash <- tokens.withId(user.refreshTokenId).map(_.hash).one
+    } yield hash
+  } catch {
+    case _: Exception => throw invalidIDs
   }
 
   /**
@@ -91,23 +87,21 @@ object Auth extends FinagleFilter {
    * belongs to the user and, if so, make the token expire.
    *
    * @param username The user name
-   * @param hash The user refresh token hash
-   * @param ec The execution context on which database IO and futures should
-   *           be computed
-   * @param db The database on which to operate
-   * @return Nothing
+   * @param hash     The user refresh token hash
+   * @param ec       The execution context on which database IO and futures should
+   *                 be computed
+   * @param db       The database on which to operate
+   * @return true if the user was disconnected, false otherwise
    */
   def logout(username: String, hash: String)(
     implicit ec: ExecutionContext,
     db: Database
   ): Future[Unit] = for {
-    user <- single(users.filter(_.username === username))
-    expirationDate = tokens
-      .filter(token => token.id === user.refreshTokenId)
-      .filter(_.hash === hash)
-      .map(_.expirationDate)
-    _ <- db.run(expirationDate.update(timestampNow()))
-  } yield ()
+    user <- users.withUsername(username).one
+    modified <- tokens.withId(user.refreshTokenId).withHash(hash).ifNotExpired.revoke.execute
+  } yield
+    if (modified < 1) throw invalidToken
+    else ()
 
   /**
    * Given a username and a refresh token hash, verifies that the token
@@ -115,39 +109,49 @@ object Auth extends FinagleFilter {
    * token was about to expire, it is extended.
    *
    * @param username The user name
-   * @param hash The refresh token hash
-   * @param ec The execution context on which database IO and futures should
-   *           be computed
-   * @param db The database on which to operate
+   * @param hash     The refresh token hash
+   * @param ec       The execution context on which database IO and futures should
+   *                 be computed
+   * @param db       The database on which to operate
    * @return The refresh and access token hashes
    */
   def refresh(username: String, hash: String)(
     implicit ec: ExecutionContext,
     db: Database
-  ): Future[(String, String)] = {
-    val tokenRetrieval = single(for {
-      user <- users if user.username === username
-      token <- user.refreshToken if token.hash === hash
-    } yield token)
+  ): Future[(String, String)] = for {
+    user <- users.withUsername(username).one
+    refreshHash = seed
+    modified <- tokens
+      .withId(user.refreshTokenId)
+      .withHash(hash)
+      .ifNotExpired
+      .renew(refreshHash, jwtRefreshLifetime)
+      .execute
+  } yield
+    if (modified < 1) throw invalidToken
+    else (refreshHash, issueAccessToken(username))
 
-    for {
-      token <- tokenRetrieval if token.verify(hash) && token.ttl > 0
-      refresh <- token.renew(jwtRefreshLifetime)
-    } yield (refresh.hash, issueAccessToken(username))
+  private def seed: String = Random.alphanumeric.take(32).mkString
+
+  private def issueAccessToken(subject: String): String = {
+    val claim = JwtClaim(issuer = Some("IAM"), subject = Some(subject))
+      .startsNow
+      .expiresIn(jwtAccessLifetime)
+    JwtCirce.encode(claim, jwtAccessKey, jwtAccessAlgorithm)
   }
 
   /* --------------------------- Finagle Filter ---------------------------- */
 
-  private def authenticate(token: String): Try[JwtClaim] = Try {
-    val now = timestampNow().getTime / 1000
-    val claim = JwtCirce
-      .decode(token, jwtAccessKey, Seq(jwtAccessAlgorithm))
-      .getOrElse { throw malformedToken }
-
-    if (claim.expiration.getOrElse(0.toLong) <= now)
-      throw expiredToken
-    else
-      claim
+  override def apply(request: Request, context: Auth.Context): TwitterFuture[Response] = {
+    try {
+      val token = authenticated(request).get
+      context.setThreadLocal("token", token)
+      context(request)
+    } catch {
+      case _: TokenException => TwitterFuture.value(Response(Status.Unauthorized))
+      // TODO Add the throwable body to the response
+      case _: Throwable => TwitterFuture.value(Response(Status.InternalServerError))
+    }
   }
 
   private def authenticated(request: Request): Try[JwtClaim] = Try {
@@ -157,15 +161,12 @@ object Auth extends FinagleFilter {
     }
   }
 
-  override def apply(request: Request, context: Auth.Context): TwitterFuture[Response] = {
-    try {
-      val token = authenticated(request).get
-      context.setThreadLocal("token", token)
-      context(request)
-    } catch {
-      case _: TokenException => TwitterFuture.value(Response(Status.Unauthorized))
-      case e: Throwable => throw e //TwitterFuture.value(Response(Status.InternalServerError))
-    }
+  private def authenticate(token: String): Try[JwtClaim] = Try {
+    JwtCirce
+      .decode(token, jwtAccessKey, Seq(jwtAccessAlgorithm))
+      .getOrElse {
+        throw expiredToken
+      }
   }
 
 }

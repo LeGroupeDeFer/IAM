@@ -114,8 +114,11 @@ package object lib {
   }
 
   case class Hash(value: String) extends MappedTo[String] {
-    def check(password: String): Boolean =
-      BCrypt.checkpw(password, value)
+    def ==(other: Hash): Boolean =
+      value == other.value
+
+    def ==(other: String): Boolean =
+      BCrypt.checkpw(other, value)
   }
 
 }

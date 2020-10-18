@@ -1,6 +1,6 @@
 package be.unamur.infom453.iam.controllers.api
 
-import be.unamur.infom453.iam.models.{CanDataTable, CanTable}
+import be.unamur.infom453.iam.models.{Can, CanData, CanDataTable, CanTable}
 import be.unamur.infom453.iam.lib._
 import wvlet.airframe.http.{Endpoint, HttpMethod, Router}
 
@@ -10,10 +10,18 @@ object APIController {
 
   val routes: Router = Router.of[APIController]
 
-  case class CanDataControllerObject(moment: String, filling_rate: Double)
+  case class CanDataResponse(moment: String, fillingRate: Double)
+  object CanDataResponse {
+    def from(canData: CanData): CanDataResponse =
+      CanDataResponse(canData.moment.toString, canData.fillingRate)
+  }
 
-  def fromCanData(o: CanDataTable.CanData): CanDataControllerObject =
-    CanDataControllerObject(o.moment.toString, o.filling_rate)
+
+  case class CansResponse(id: Int, identifier: String, latitude: Double, longitude: Double, data: Seq[CanDataResponse])
+  object CansResponse {
+    def from(can: Can, canData: Seq[CanData]): CansResponse =
+      CansResponse(can.id.get, can.identifier, can.latitude, can.longitude, canData.map(CanDataResponse.from))
+  }
 
 }
 
@@ -26,16 +34,12 @@ trait APIController {
   def noodles = "You single-handedly fought your way into this hopeless mess."
 
   @Endpoint(method = HttpMethod.GET, path = "/cans")
-  def getCans: Future[Seq[CanTable.Can]] = CanTable.all()
+  def cans: Future[Seq[CanTable.Can]] = CanTable.all()
 
   @Endpoint(method = HttpMethod.GET, path = "/can/:identifier")
-  def getCanData(identifier: String): Future[(CanTable.Can, Seq[CanDataControllerObject])] = {
-    val info = CanTable.allData(identifier)
-    for {
-      (a, b) <- info
-      tab = b.map(fromCanData)
-    } yield (a, tab)
+  def can(identifier: String): Future[CansResponse] = for {
+    (a, b) <- CanTable.allData(identifier)
+  } yield CansResponse.from(a, b)
 
-  }
 }
 

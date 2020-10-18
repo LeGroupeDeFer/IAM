@@ -1,7 +1,7 @@
 package be.unamur.infom453.iam.models
 
 import java.sql.Timestamp
-import java.time.LocalDateTime
+import java.time.{Instant, LocalDateTime}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
@@ -10,7 +10,6 @@ import be.unamur.infom453.iam.lib._
 
 object TokenTable {
 
-  def seed: String = Random.alphanumeric.take(32).mkString
   import api._
 
   /* ------------------------ ORM class definition ------------------------ */
@@ -18,36 +17,19 @@ object TokenTable {
   case class Token(
     id: Option[Int],
     hash: String,
-    creationDate: Timestamp,
-    expirationDate: Option[Timestamp]
+    creationDate: Instant,
+    expirationDate: Option[Instant]
   ) {
-    def verify(given: String): Boolean =
-      given == hash
-
     def ttl: Long = expirationDate
-      .map(_.getTime - timestampNow().getTime)
+      .map(_.getEpochSecond - now.getEpochSecond)
       .getOrElse(0)
-
-    def renew(lifetime: Long)(
-      implicit ec: ExecutionContext,
-      db: Database
-    ): Future[Token] = {
-      if (this.ttl > lifetime / 2)
-        return Future(this)
-
-      val query = for (
-        token <- tokens if token.id === id
-      ) yield (token.hash, token.expirationDate)
-
-      val newExpiration = timestampAfter(lifetime)
-      val newHash = seed
-      val update = query.update((newHash, newExpiration))
-
-      db.run(update)
-        .map(_ => Token(id, newHash, creationDate, Some(newExpiration)))
-        .recoverWith { case _: Exception => throw updateError}
-    }
   }
+
+  private def tokenTupled(row: (Option[Int], String, Timestamp, Option[Timestamp])): Token =
+    Token(row._1, row._2, row._3.toInstant, row._4.map(_.toInstant))
+
+  private def tokenUnapply(t: Token): Option[(Option[Int], String, Timestamp, Option[Timestamp])] =
+    Some(t.id, t.hash, Timestamp from t.creationDate, t.expirationDate.map(Timestamp.from))
 
   class Tokens(tag: Tag) extends Table[Token](tag, "tokens") {
 
@@ -58,37 +40,11 @@ object TokenTable {
     def expirationDate: Rep[Timestamp]  = column[Timestamp]("expiration_date")
 
     // Projection
-    def * = (id.?, hash, creationDate, expirationDate.?) <> (Token.tupled, Token.unapply)
+    def * = (id.?, hash, creationDate, expirationDate.?) <> (tokenTupled, tokenUnapply)
 
   }
 
   val tokens = TableQuery[Tokens]
-
-  /* --------------------- ORM Manipulation functions --------------------- */
-
-  def create(lifetime: Long)(
-    implicit ec: ExecutionContext,
-    db: Database
-  ): Future[Token] = {
-    // Prepare the data to create a token
-    val creationDateTime = LocalDateTime.now()
-    val expirationDateTime = creationDateTime plusSeconds lifetime
-    val creationDate = Timestamp valueOf creationDateTime
-    val expirationDate = Timestamp valueOf expirationDateTime
-    val hash: String = seed
-
-    // Create a token
-    val token = Token(None, hash, creationDate, Some(expirationDate))
-
-    // Insert
-    for {
-      id <- db.run(tokens += token)
-      insert <- db.run(tokens.filter(_.id === id).result.headOption)
-    } yield insert match {
-      case Some(token) => token
-      case None => throw insertionError
-    }
-  }
 
 }
 
