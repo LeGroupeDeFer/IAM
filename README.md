@@ -25,7 +25,7 @@ When the prerequisites are satisfied, run:
 docker-compose up -d
 ```
 
-You're done and may now head to [localhost:8000](http://localhost:8000)!
+You're done! Drink a cup of coffee while backend and frontend sources are compiled and then head to [localhost:8000](http://localhost:8000)!
 The migrations, backend and frontend logs can be respectively found in `migrations.log`, `backend.log` and `frontend.log`.
 
 #### Without Docker:
@@ -64,6 +64,7 @@ npm run build
 ```
 will compile frontend assets and output the result to the `public/build` directory. If you wish to recompile on every change, you may replace `npm run build` by `npm run dev`. When the assets have been prepared, we need to add the resulting files to the backend `resources` folder for server delivery:
 ```bash
-cp -R frontend/public/. backend/src/main/resources/
+mkdir backend/backend/target/scala-2.12/assets
+cp -R frontend/public/. backend/target/scala-2.12/assets
 ```
 If you wish to automate the process you may either use a watcher such as inotify or simply link the two folders.

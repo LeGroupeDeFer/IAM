@@ -17,10 +17,22 @@ object APIController {
   }
 
 
-  case class CansResponse(id: Int, identifier: String, latitude: Double, longitude: Double, data: Seq[CanDataResponse])
-  object CansResponse {
-    def from(can: Can, canData: Seq[CanData]): CansResponse =
-      CansResponse(can.id.get, can.identifier, can.latitude, can.longitude, canData.map(CanDataResponse.from))
+  case class CanResponse(
+    id: Int,
+    identifier: String,
+    latitude: Double,
+    longitude: Double,
+    data: Seq[CanDataResponse]
+  )
+  object CanResponse {
+    def from(can: Can, canData: Seq[CanData]): CanResponse =
+      CanResponse(
+        can.id.get,
+        can.identifier,
+        can.latitude,
+        can.longitude,
+        canData.map(CanDataResponse.from)
+      )
   }
 
 }
@@ -30,16 +42,13 @@ trait APIController {
 
   import APIController._
 
-  @Endpoint(method = HttpMethod.GET, path = "/noodles")
-  def noodles = "You single-handedly fought your way into this hopeless mess."
-
   @Endpoint(method = HttpMethod.GET, path = "/cans")
-  def cans: Future[Seq[CanTable.Can]] = CanTable.all()
+  def cans: Future[Seq[Can]] = CanTable.all()
 
   @Endpoint(method = HttpMethod.GET, path = "/can/:identifier")
-  def can(identifier: String): Future[CansResponse] = for {
+  def can(identifier: String): Future[CanResponse] = for {
     (a, b) <- CanTable.allData(identifier)
-  } yield CansResponse.from(a, b)
+  } yield CanResponse.from(a, b)
 
 }
 

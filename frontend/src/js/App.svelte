@@ -1,4 +1,5 @@
 <script>
+	import Login from './components/auth/Login.svelte';
 	export let version;
 </script>
 
@@ -9,11 +10,15 @@
 		<a href="https://github.com/LeGroupeDeFer/IAM" class="git-link">
 			View on HitHub
 		</a>
+
+		<hr />
+		<Login />
 	</div>
 </main>
 
 <style>
 	.content {
+		width: 300px;
 		position: absolute;
 		top: 50%;
 		left: 50%;

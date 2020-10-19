@@ -43,6 +43,13 @@ export const clean = (o, hard = false) => {
     .reduce((a, k) => predicate(o[k]) ? update(a, k, o[k]) : a, {});
 }
 
+
+/* ------------------------------ Date utils ------------------------------- */
+
+export const epoch = new Date(0);
+
+export const now = () => Date.now() / 1000;
+
 /* ------------------------------------------------------------------------- */
 
 export default {
@@ -56,5 +63,8 @@ export default {
   defined,
   truthy,
   update,
-  clean
+  clean,
+
+  epoch,
+  now
 };
