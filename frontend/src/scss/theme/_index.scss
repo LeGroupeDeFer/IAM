@@ -1,15 +1,49 @@
+
+
 // https://coolors.co/ca2e55-ffe0b5-8a6552-462521-bdb246
 
+$primary:     #546A7B;
+$secondary:   #62929E;
+$terciary:    #C6C5B9;
+$quaternary:  #FDFDFF;
+$quinary:     #393D3F;
+
+$danger:      #F71735;
+$success:     #BDE4A7;
+
+$light:       $quaternary;
+$dark:        $quinary;
+
 @forward '../../../node_modules/bootstrap/scss/bootstrap.scss' with (
-  $body-bg: #E8DDCB,
+  $font-family-sans-serif: Roboto,
+  $font-family-monospace: Roboto-Mono,
+
+  $body-bg: $light,
+  $body-color: $dark,
+
   $theme-colors: (
-    "primary":  #031634,
-    "secondary": #462521,
-    "ternary": #8A6552,
-  )
+    "primary":    $primary,
+    "secondary":  $secondary,
+    "terciary":   $terciary,
+    "quaternary": $quaternary,
+    "quinary":    $quinary,
+    
+    "danger":     $danger,
+    "success":    $success,
+
+    "light":      $light,
+    "dark":       $dark
+  ),
+
+  $enable-rounded:        true,
+  $spacer:                1.2rem,
+  $link-hover-decoration: none,
+  $border-radius:         1rem,
+  $border-radius-lg:      1.5rem,
+  $border-radius-sm:      .5rem
 );
 
 *::selection {
-  color: #8A6552;
-  background-color: #462521;
+  color: $light;
+  background-color: $dark;
 }

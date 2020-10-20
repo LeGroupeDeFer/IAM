@@ -36,6 +36,7 @@ build
 # js
 node_modules/
 public/build/
+public/master.css
 
 # ide
 .metals

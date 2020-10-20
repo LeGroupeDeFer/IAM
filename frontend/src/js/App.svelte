@@ -30,12 +30,12 @@
 	}
 
 	.git-link {
-		color: #462521;
+		color: #62929E;
 	}
 
 	.git-link:hover {
 		text-decoration: none;
-		border-bottom: 3px solid #462521;
+		border-bottom: 3px solid #393D3F;
 		padding-bottom: 3px;
 	}
 </style>
