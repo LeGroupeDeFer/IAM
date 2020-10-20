@@ -11,9 +11,9 @@ info:
     url: 'https://opensource.org/licenses/MIT'
   description: Use trash bin fill ratio information within a city to improve a basic citizen service.
 servers:
-  - url: 'http://localhost:3000'
+  - url: 'http://localhost:8000'
 paths:
-  '/can/{id}/sync':
+  '/api/can/{id}/sync':
     parameters:
       - schema:
           type: string
@@ -30,7 +30,7 @@ paths:
           description: OK
         '406':
           description: Not acceptable
-      description: 'upload information concerning the {id} trash can'
+      description: 'Upload information concerning the {id} trash can'
       parameters:
         - schema:
             type: string
@@ -47,8 +47,16 @@ paths:
                   type: string
                 data:
                   $ref: '#/components/schemas/TrashBinForm'
+            examples:
+              Example 1:
+                value:
+                  signature: string
+                  data:
+                    id: string
+                    time: string
+                    fillingRate: 0
         description: ''
-  /cans:
+  /api/cans:
     get:
       summary: Your GET endpoint
       tags:
@@ -64,22 +72,29 @@ paths:
                 uniqueItems: false
                 items:
                   $ref: '#/components/schemas/TrashBin'
+              examples:
+                Example 1:
+                  value:
+                    - id: string
+                      longitude: 0
+                      latitude: 0
+                      publicKey: string
             application/xml:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/TrashBin'
               examples:
-                example-1:
+                Example 1:
                   value:
-                    - id: string
-                      longitude: 0
-                      latitude: 0
-                      public_key: string
+                    - id: 5zzd896az2a3d5lferzze5ez8q2s1
+                      longitude: 25.26
+                      latitude: 12.58
+                      publicKey: (...)
       operationId: get-admin-cans
       description: Get all trash can information
     parameters: []
-  /login:
+  /api/auth/login:
     post:
       summary: ''
       operationId: post-login
@@ -93,17 +108,26 @@ paths:
                 properties:
                   token:
                     type: string
+              examples:
+                Example 1:
+                  value:
+                    token: yboErluqOrjOXZII6x7SXih5VqckV5XW
         '401':
-          description: Unauthorized
-      description: send the login form to complete login
+          $ref: '#/components/responses/InvalidIDs'
+      description: Request for a long-lived connection.
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Credentials'
+              $ref: '#/components/schemas/LoginCredentials'
+            examples:
+              Example 1:
+                value:
+                  username: john
+                  password: secret
       tags:
         - user
-  '/admin/can/{id}':
+  '/api/admin/can/{id}':
     parameters:
       - schema:
           type: string
@@ -117,17 +141,24 @@ paths:
         '200':
           description: OK
         '401':
-          description: Unauthorized
+          $ref: '#/components/responses/AccessUnauthorized'
         '404':
           description: Not Found
       description: Update a trash bin
       security:
-        - Tokenauth: []
+        - bearerAuth: []
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/TrashBin'
+            examples:
+              Example 1:
+                value:
+                  id: string
+                  longitude: 0
+                  latitude: 0
+                  publicKey: string
       tags:
         - admin
         - can
@@ -144,11 +175,11 @@ paths:
         '200':
           description: OK
         '401':
-          description: Unauthorized
+          $ref: '#/components/responses/AccessUnauthorized'
         '404':
           description: Not found
       security:
-        - Tokenauth: []
+        - bearerAuth: []
       description: Delete an existing trash bin
       tags:
         - admin
@@ -159,7 +190,7 @@ paths:
           in: query
           name: id
           description: The id of the trash bin
-  /admin/can:
+  /api/admin/can:
     post:
       summary: ''
       operationId: post-admin-can
@@ -175,20 +206,31 @@ paths:
                     type: string
                 required:
                   - id
+              examples:
+                Example 1:
+                  value:
+                    id: string
         '401':
-          description: Unauthorized
+          $ref: '#/components/responses/AccessUnauthorized'
       description: Create a new trash bin
       security:
-        - Tokenauth: []
+        - bearerAuth: []
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/TrashBin'
+            examples:
+              Example 1:
+                value:
+                  id: string
+                  longitude: 0
+                  latitude: 0
+                  publicKey: string
       tags:
         - admin
         - can
-  '/can/{id}':
+  '/api/can/{id}':
     parameters:
       - schema:
           type: string
@@ -206,6 +248,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TrashBinInfo'
+              examples:
+                Example 1:
+                  value:
+                    trashBin:
+                      id: string
+                      longitude: 0
+                      latitude: 0
+                      publicKey: string
+                    data:
+                      - time: string
+                        fillingRate: 0
       operationId: get-can-id-info
       description: Get all the available information about one trash bin
       parameters:
@@ -214,7 +267,71 @@ paths:
           in: query
           name: id
           description: The id of the trash bin
+  /api/auth/logout:
+    post:
+      summary: ''
+      operationId: post-api-auth-logout
+      responses:
+        '200':
+          description: OK
+        '401':
+          $ref: '#/components/responses/RefreshUnauthorized'
+      description: Request for user disconnection.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutCredentials'
+            examples:
+              Example 1:
+                value:
+                  username: john
+                  token: yboErluqOrjOXZII6x7SXih5VqckV5XW
+      tags:
+        - user
+  /api/auth/refresh:
+    post:
+      summary: ''
+      operationId: post-api-auth-refresh
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationData'
+              examples:
+                Example 1:
+                  value:
+                    access: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJJQU0iLCJzdWIiOiJqb2huIiwiZXhwIjoxNjAzMjA3ODQzLCJuYmYiOjE2MDMyMDc1NDN9.Ux3X1YBOgnlTBdHyxyviMs37ud8nIb1Zt_SLe8Y-dwA
+                    refresh: yboErluqOrjOXZII6x7SXih5VqckV5XW
+                Example 2:
+                  value:
+                    access: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJJQU0iLCJzdWIiOiJqb2huIiwiZXhwIjoxNjAzMjA3ODQzLCJuYmYiOjE2MDMyMDc1NDN9.Ux3X1YBOgnlTBdHyxyviMs37ud8nIb1Zt_SLe8Y-dwA
+                    refresh: r7J0W2gsgLVIec9VRUmI6dTgbMLZjdRJ
+        '401':
+          $ref: '#/components/responses/RefreshUnauthorized'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshCredentials'
+            examples:
+              Example 1:
+                value:
+                  username: john
+                  token: yboErluqOrjOXZII6x7SXih5VqckV5XW
+      tags:
+        - user
+      description: Request for authorization renewal.
 components:
+  responses:
+    InvalidIDs:
+      description: Invalid username/password
+    AccessUnauthorized:
+      description: Access token is missing or invalid
+    RefreshUnauthorized:
+      description: Refresh token is missing or invalid
   schemas:
     TrashBin:
       title: TrashBin
@@ -227,11 +344,11 @@ components:
           type: number
         latitude:
           type: number
-        public_key:
+        publicKey:
           type: string
       required:
         - id
-        - public_key
+        - publicKey
     TrashBinForm:
       title: TrashBinData
       type: object
@@ -240,14 +357,14 @@ components:
           type: string
         time:
           type: string
-        filling_rate:
+        fillingRate:
           type: number
       required:
         - id
         - time
-        - filling_rate
-    Credentials:
-      title: Login
+        - fillingRate
+    LoginCredentials:
+      title: LoginCredentials
       type: object
       properties:
         username:
@@ -257,11 +374,12 @@ components:
       required:
         - username
         - password
+      description: ''
     TrashBinInfo:
       title: TrashBinInfo
       type: object
       properties:
-        trash_bin:
+        trashBin:
           $ref: '#/components/schemas/TrashBin'
         data:
           type: array
@@ -273,17 +391,52 @@ components:
       properties:
         time:
           type: string
-        filling_rate:
+        fillingRate:
           type: number
       required:
         - time
-        - filling_rate
+        - fillingRate
+    LogoutCredentials:
+      title: LogoutCredentials
+      type: object
+      properties:
+        username:
+          type: string
+        token:
+          type: string
+      required:
+        - username
+        - token
+      description: The user username and current refresh token
+    RefreshCredentials:
+      title: RefreshCredentials
+      type: object
+      properties:
+        username:
+          type: string
+        token:
+          type: string
+      required:
+        - username
+        - token
+      description: The user usersame and current refresh token
+    AuthorizationData:
+      title: AuthorizationData
+      type: object
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+      required:
+        - access
+        - refresh
+      description: 'The user access token, voucher of his authorization(s) and a possibly renewed refresh token.'
   securitySchemes:
-    Tokenauth:
-      name: auth_token
-      type: apiKey
-      in: cookie
-      description: Authentication token
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
 tags:
   - name: can
   - name: admin
