@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: IAM
-  version: '1.0'
+  version: '0.0.1'
   contact:
     name: Groupe de Fer
     email: info@groupedefer.be
@@ -21,46 +21,39 @@ paths:
         in: path
         required: true
     post:
-      summary: ''
+      summary: 'Synchronise an agent data with the system'
       tags:
         - can
+        - agent
       operationId: post-sync-can-id
       responses:
-        '200':
+        '201':
           description: OK
         '406':
           description: Not acceptable
       description: 'Upload information concerning the {id} trash can'
-      parameters:
-        - schema:
-            type: string
-          in: query
-          name: id
-          description: The id of the trash can
+      parameters: []
       requestBody:
         content:
+          text/plain:
+            schema:
+              type: string
+            examples:
+              Example 1:
+                value: averylongencryptedpayload
           application/json:
             schema:
               type: object
-              properties:
-                signature:
-                  type: string
-                data:
-                  $ref: '#/components/schemas/TrashBinForm'
+              properties: {}
             examples:
-              Example 1:
-                value:
-                  signature: string
-                  data:
-                    id: string
-                    time: string
-                    fillingRate: 0
-        description: ''
+              example-1:
+                value: {}
+        description: The can private key encrypted synchronization payload
+  
   /api/cans:
     get:
-      summary: Your GET endpoint
+      summary: 'The set of trash cans this server handles'
       tags:
-        - admin
         - can
       responses:
         '200':
@@ -71,7 +64,7 @@ paths:
                 type: array
                 uniqueItems: false
                 items:
-                  $ref: '#/components/schemas/TrashBin'
+                  $ref: '#/components/schemas/TrashCan'
               examples:
                 Example 1:
                   value:
@@ -83,7 +76,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/TrashBin'
+                  $ref: '#/components/schemas/TrashCan'
               examples:
                 Example 1:
                   value:
@@ -94,39 +87,38 @@ paths:
       operationId: get-admin-cans
       description: Get all trash can information
     parameters: []
-  /api/auth/login:
-    post:
-      summary: ''
-      operationId: post-login
+  
+  '/api/can/{id}':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: 'The trash can data with a set of detailed samples'
+      tags:
+        - can
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  token:
-                    type: string
+                $ref: '#/components/schemas/TrashCan'
               examples:
                 Example 1:
                   value:
-                    token: yboErluqOrjOXZII6x7SXih5VqckV5XW
-        '401':
-          $ref: '#/components/responses/InvalidIDs'
-      description: Request for a long-lived connection.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LoginCredentials'
-            examples:
-              Example 1:
-                value:
-                  username: john
-                  password: secret
-      tags:
-        - user
+                    id: string
+                    longitude: 0
+                    latitude: 0
+                    publicKey: string
+                    data:
+                      - time: string
+                        fillingRate: 0
+      operationId: get-can-id-info
+      description: Get all the available information about one trash bin
+  
   '/api/admin/can/{id}':
     parameters:
       - schema:
@@ -135,7 +127,8 @@ paths:
         in: path
         required: true
     put:
-      summary: ''
+      summary: 'Update a trash can information'
+      description: 'Update a trash can information'
       operationId: put-admin-can-id
       responses:
         '200':
@@ -144,14 +137,13 @@ paths:
           $ref: '#/components/responses/AccessUnauthorized'
         '404':
           description: Not Found
-      description: Update a trash bin
       security:
         - bearerAuth: []
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TrashBin'
+              $ref: '#/components/schemas/TrashCan'
             examples:
               Example 1:
                 value:
@@ -169,7 +161,8 @@ paths:
           name: id
           description: The id of the trash bin
     delete:
-      summary: ''
+      summary: 'Delete a trash can from the system'
+      description: 'Delete a trash can from the system'
       operationId: delete-admin-can-id
       responses:
         '200':
@@ -180,22 +173,22 @@ paths:
           description: Not found
       security:
         - bearerAuth: []
-      description: Delete an existing trash bin
       tags:
         - admin
-        - tag
       parameters:
         - schema:
             type: string
           in: query
           name: id
           description: The id of the trash bin
+  
   /api/admin/can:
     post:
-      summary: ''
+      summary: 'Create a new trash can'
+      description: 'Create a new trash can'
       operationId: post-admin-can
       responses:
-        '200':
+        '201':
           description: OK
           content:
             application/json:
@@ -212,14 +205,13 @@ paths:
                     id: string
         '401':
           $ref: '#/components/responses/AccessUnauthorized'
-      description: Create a new trash bin
       security:
         - bearerAuth: []
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TrashBin'
+              $ref: '#/components/schemas/TrashCan'
             examples:
               Example 1:
                 value:
@@ -230,53 +222,51 @@ paths:
       tags:
         - admin
         - can
-  '/api/can/{id}':
-    parameters:
-      - schema:
-          type: string
-        name: id
-        in: path
-        required: true
-    get:
-      summary: Your GET endpoint
-      tags:
-        - can
+
+
+  /api/auth/login:
+    post:
+      summary: 'Request for long-lived connection'
+      description: 'Request for long-lived connection'
+      operationId: post-login
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TrashBinInfo'
+                type: object
+                properties:
+                  token:
+                    type: string
               examples:
                 Example 1:
                   value:
-                    trashBin:
-                      id: string
-                      longitude: 0
-                      latitude: 0
-                      publicKey: string
-                    data:
-                      - time: string
-                        fillingRate: 0
-      operationId: get-can-id-info
-      description: Get all the available information about one trash bin
-      parameters:
-        - schema:
-            type: string
-          in: query
-          name: id
-          description: The id of the trash bin
+                    token: yboErluqOrjOXZII6x7SXih5VqckV5XW
+        '401':
+          $ref: '#/components/responses/InvalidIDs'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginCredentials'
+            examples:
+              Example 1:
+                value:
+                  username: john
+                  password: secret
+      tags:
+        - auth
   /api/auth/logout:
     post:
-      summary: ''
+      summary: 'End a long lived connection'
+      description: 'End a long lived connection'
       operationId: post-api-auth-logout
       responses:
         '200':
           description: OK
         '401':
           $ref: '#/components/responses/RefreshUnauthorized'
-      description: Request for user disconnection.
       requestBody:
         content:
           application/json:
@@ -288,10 +278,11 @@ paths:
                   username: john
                   token: yboErluqOrjOXZII6x7SXih5VqckV5XW
       tags:
-        - user
+        - auth
   /api/auth/refresh:
     post:
-      summary: ''
+      summary: 'Request for an access token'
+      description: 'Request for an access token'
       operationId: post-api-auth-refresh
       responses:
         '200':
@@ -299,7 +290,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthorizationData'
+                $ref: '#/components/schemas/Authorization'
               examples:
                 Example 1:
                   value:
@@ -322,9 +313,9 @@ paths:
                   username: john
                   token: yboErluqOrjOXZII6x7SXih5VqckV5XW
       tags:
-        - user
-      description: Request for authorization renewal.
+        - auth
 components:
+  
   responses:
     InvalidIDs:
       description: Invalid username/password
@@ -332,11 +323,12 @@ components:
       description: Access token is missing or invalid
     RefreshUnauthorized:
       description: Refresh token is missing or invalid
+  
   schemas:
-    TrashBin:
-      title: TrashBin
+    TrashCan:
+      title: TrashCan
       type: object
-      description: TrashBin information
+      description: TrashCan information
       properties:
         id:
           type: string
@@ -346,23 +338,25 @@ components:
           type: number
         publicKey:
           type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrashCanSample'
       required:
         - id
         - publicKey
-    TrashBinForm:
-      title: TrashBinData
+    TrashCanSample:
+      title: TrashCanSample
       type: object
       properties:
-        id:
-          type: string
         time:
           type: string
         fillingRate:
           type: number
       required:
-        - id
         - time
         - fillingRate
+    
     LoginCredentials:
       title: LoginCredentials
       type: object
@@ -375,27 +369,6 @@ components:
         - username
         - password
       description: ''
-    TrashBinInfo:
-      title: TrashBinInfo
-      type: object
-      properties:
-        trashBin:
-          $ref: '#/components/schemas/TrashBin'
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Data'
-    Data:
-      title: Data
-      type: object
-      properties:
-        time:
-          type: string
-        fillingRate:
-          type: number
-      required:
-        - time
-        - fillingRate
     LogoutCredentials:
       title: LogoutCredentials
       type: object
@@ -420,8 +393,8 @@ components:
         - username
         - token
       description: The user usersame and current refresh token
-    AuthorizationData:
-      title: AuthorizationData
+    Authorization:
+      title: Authorization
       type: object
       properties:
         access:
@@ -432,6 +405,7 @@ components:
         - access
         - refresh
       description: 'The user access token, voucher of his authorization(s) and a possibly renewed refresh token.'
+  
   securitySchemes:
     bearerAuth:
       type: http
@@ -440,5 +414,5 @@ components:
 tags:
   - name: can
   - name: admin
-  - name: user
-  - name: tag
+  - name: auth
+  - name: agent
