@@ -1,6 +1,7 @@
 <script>
   import Form from "../../components/auth/Form.svelte";
-  
+  import { Link } from "svelte-routing";
+
   export let version;
 </script>
 
@@ -30,7 +31,9 @@
 
 <div class="content text-center">
   <p class="text-muted my-0">v{version}</p>
-  <h1 class="text-primary py-0 my-0">IAM</h1>
+  <Link>
+    <h1 class="text-primary py-0 my-0">IAM</h1>
+  </Link>
   <a href="https://github.com/LeGroupeDeFer/IAM" class="git-link">
     View on GitHub
   </a>
