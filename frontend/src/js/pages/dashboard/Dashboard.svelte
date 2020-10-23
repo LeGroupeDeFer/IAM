@@ -1,5 +1,4 @@
 <script>
-  import Navbar from "../../components/overall/Navbar.svelte";
   import Map from "../../components/dashboard/Map.svelte";
   import MapMarker from "../../components/dashboard/MapMarker.svelte";
 
@@ -28,7 +27,6 @@
   }
 </style>
 
-<Navbar />
 <div class="mapbox">
   <Map lat={50.4667} lon={4.8667} zoom={14.5}>
     {#each cans as can}
