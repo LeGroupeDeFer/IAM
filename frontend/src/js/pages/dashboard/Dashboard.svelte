@@ -4,5 +4,5 @@
 
 <Navbar />
 <main>
-  <b>TODO</b>
+  <b>Dashboard TODO</b>
 </main>
