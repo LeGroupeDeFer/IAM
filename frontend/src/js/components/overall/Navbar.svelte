@@ -9,6 +9,7 @@
     NavItem,
     NavLink,
   } from "sveltestrap";
+  import AuthGard from "../auth/AuthGuard.svelte";
 
   let isOpen = false;
 
@@ -20,8 +21,7 @@
     isOpen = event.detail.isOpen;
   }
 
-  // TODO : Add admin link if user is connected
-  // FIXME : navigate() appends a # to the url - why ?  
+  // FIXME : navigate() appends a # to the url - why ?
 </script>
 
 <style>
@@ -36,9 +36,20 @@
   <NavbarToggler on:click={() => (isOpen = !isOpen)} />
   <Collapse {isOpen} navbar expand="md" on:update={handleUpdate}>
     <Nav class="ml-auto" navbar>
-      <NavItem>
-        <NavLink on:click={() => goto('auth')}>Sign in</NavLink>
-      </NavItem>
+      <AuthGard>
+        <NavItem>
+          <NavLink on:click={() => goto('admin')}>Administration</NavLink>
+        </NavItem>
+        <NavItem>
+          <NavLink on:click={() => goto('auth')}>Sign out</NavLink>
+        </NavItem>
+      </AuthGard>
+
+      <AuthGard reverse>
+        <NavItem>
+          <NavLink on:click={() => goto('auth')}>Sign in</NavLink>
+        </NavItem>
+      </AuthGard>
     </Nav>
   </Collapse>
 </Navbar>
