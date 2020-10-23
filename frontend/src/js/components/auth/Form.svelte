@@ -1,5 +1,6 @@
 <script>
   import { Form, FormGroup, Input, Label, Button } from "sveltestrap";
+  import { navigate } from "svelte-routing";
   import auth from "iam/stores/auth";
   import AuthGuard from "./AuthGuard.svelte";
 
@@ -8,8 +9,10 @@
   $: canLogin = username.length && password.length;
 
   const clear = () => (username = password = "");
-  const onLogin = (e) =>
+  const onLogin = (e) => {
     e.preventDefault() || (auth.login(username, password) && clear());
+    navigate('/');
+  };
   const onLogout = (e) => e.preventDefault() || auth.logout();
 </script>
 
