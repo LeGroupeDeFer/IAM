@@ -175,6 +175,7 @@ paths:
         - bearerAuth: []
       tags:
         - admin
+        - can
       parameters:
         - schema:
             type: string
