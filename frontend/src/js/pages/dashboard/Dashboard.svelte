@@ -1,7 +1,7 @@
 <script>
   import Navbar from "../../components/overall/Navbar.svelte";
-  import Map from './Map.svelte';
-	import MapMarker from './MapMarker.svelte';
+  import Map from '../../components/dashboard/Map.svelte';
+	import MapMarker from '../../components/dashboard/MapMarker.svelte';
 </script>
 
 <style>

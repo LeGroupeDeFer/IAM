@@ -1,6 +1,6 @@
 <script>
   import { getContext } from "svelte";
-  import { mapbox, key } from "./mapbox.js";
+  import { mapbox, key } from "../../lib/mapbox.js";
 
   const { getMap } = getContext(key);
   const map = getMap();

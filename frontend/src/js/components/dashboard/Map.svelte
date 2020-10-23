@@ -1,6 +1,6 @@
 <script>
   import { onMount, setContext } from "svelte";
-  import { mapbox, key } from "./mapbox.js";
+  import { mapbox, key } from "../../lib/mapbox.js";
 
   setContext(key, {
     getMap: () => map,
