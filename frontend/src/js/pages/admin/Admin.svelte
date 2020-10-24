@@ -86,4 +86,7 @@
   </AuthGuard>
 </div>
 
-<NewCanModal open={openedModal} toggle={toggleModal} on:addToggled={addCan} />
+<NewCanModal
+  isOpen={openedModal}
+  on:toggle={toggleModal}
+  on:addToggled={addCan} />

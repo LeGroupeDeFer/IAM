@@ -10,15 +10,19 @@
     Input,
   } from "sveltestrap";
 
-  export let open = false;
-  export let toggle;
-  export let addCan;
+  export let isOpen = false;
+
+  const dispatch = createEventDispatcher();
+  const toggle = () => dispatch("toggle");
 
   let id = "";
   let longitude = "";
   let latitude = "";
   let publicKey = "";
-  const dispatch = createEventDispatcher();
+  let fieldsCompleted = false;
+
+  $: fieldsCompleted =
+    id.length && longitude.length && latitude.length && publicKey.length;
 
   function clear() {
     id = "";
@@ -28,19 +32,28 @@
   }
 </script>
 
-<Modal isOpen={open} {toggle}>
+<style>
+  .separation {
+    padding: 0.5em;
+  }
+</style>
+
+<Modal {isOpen} {toggle}>
   <ModalHeader {toggle}>Add a new can</ModalHeader>
   <ModalBody>
     <FormGroup>
       <Input type="text" placeholder="Enter the id" bind:value={id} />
+      <span class="separation" />
       <Input
         type="text"
         placeholder="Enter the longitude"
         bind:value={longitude} />
+      <span class="separation" />
       <Input
         type="text"
         placeholder="Enter the latitude"
         bind:value={latitude} />
+      <span class="separation" />
       <Input
         type="text"
         placeholder="Enter the public key"
@@ -50,8 +63,9 @@
   <ModalFooter>
     <Button
       color="primary"
+      disabled={!fieldsCompleted}
       on:click={() => {
-        dispatch('addToggled', {id, latitude, longitude, publicKey})
+        dispatch('addToggled', { id, latitude, longitude, publicKey });
         toggle();
         clear();
       }}>
