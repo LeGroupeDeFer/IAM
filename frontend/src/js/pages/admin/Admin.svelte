@@ -24,17 +24,16 @@
     },
   ];
 
-  function addCan(id, longitude, latitude, publicKey) {
-    const newCan = { id, longitude, latitude, publicKey };
-    console.log(newCan);
-    console.log([...cans, newCan]);
+  function addCan(event) {
     // api.can.add(newCan)
+    const { id, latitude, longitude, publicKey } = event.detail;
+    const newCan = { id, longitude, latitude, publicKey };
     cans = [...cans, newCan];
   }
 
   function deleteCan(event) {
     // api.can.remove(id) TODO
-    cans = cans.filter(can => can.id !== event.detail.id)
+    cans = cans.filter((can) => can.id !== event.detail.id);
   }
 </script>
 
@@ -87,4 +86,4 @@
   </AuthGuard>
 </div>
 
-<NewCanModal open={openedModal} toggle={toggleModal} {addCan} />
+<NewCanModal open={openedModal} toggle={toggleModal} on:addToggled={addCan} />

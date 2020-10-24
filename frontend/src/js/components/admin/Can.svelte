@@ -21,9 +21,7 @@
           outline
           color="danger"
           size="sm"
-          on:click={() => {
-            dispatch('deleteToggled', { id: can.id });
-          }}>
+          on:click={() => dispatch('deleteToggled', { id: can.id })}>
           Delete
         </Button>
       </Col>

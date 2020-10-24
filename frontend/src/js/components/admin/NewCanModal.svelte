@@ -1,4 +1,5 @@
 <script>
+  import { createEventDispatcher } from "svelte";
   import {
     Button,
     Modal,
@@ -17,6 +18,7 @@
   let longitude = "";
   let latitude = "";
   let publicKey = "";
+  const dispatch = createEventDispatcher();
 
   function clear() {
     id = "";
@@ -49,7 +51,7 @@
     <Button
       color="primary"
       on:click={() => {
-        addCan(id, latitude, longitude, publicKey);
+        dispatch('addToggled', {id, latitude, longitude, publicKey})
         toggle();
         clear();
       }}>
