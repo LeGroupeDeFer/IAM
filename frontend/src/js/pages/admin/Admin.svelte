@@ -32,8 +32,9 @@
     cans = [...cans, newCan];
   }
 
-  function removeCan() {
+  function deleteCan(event) {
     // api.can.remove(id) TODO
+    cans = cans.filter(can => can.id !== event.detail.id)
   }
 </script>
 
@@ -74,7 +75,7 @@
   <AuthGuard>
     {#each cans as can}
       <div class="can">
-        <Can {can} />
+        <Can {can} on:deleteToggled={deleteCan} />
       </div>
     {/each}
 
