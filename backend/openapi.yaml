@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: IAM
-  version: '0.0.1'
+  version: 0.0.1
   contact:
     name: Groupe de Fer
     email: info@groupedefer.be
@@ -21,7 +21,7 @@ paths:
         in: path
         required: true
     post:
-      summary: 'Synchronise an agent data with the system'
+      summary: Synchronise an agent data with the system
       tags:
         - can
         - agent
@@ -49,10 +49,9 @@ paths:
               example-1:
                 value: {}
         description: The can private key encrypted synchronization payload
-  
   /api/cans:
     get:
-      summary: 'The set of trash cans this server handles'
+      summary: The set of trash cans this server handles
       tags:
         - can
       responses:
@@ -87,7 +86,6 @@ paths:
       operationId: get-admin-cans
       description: Get all trash can information
     parameters: []
-  
   '/api/can/{id}':
     parameters:
       - schema:
@@ -96,7 +94,7 @@ paths:
         in: path
         required: true
     get:
-      summary: 'The trash can data with a set of detailed samples'
+      summary: The trash can data with a set of detailed samples
       tags:
         - can
       responses:
@@ -118,7 +116,6 @@ paths:
                         fillingRate: 0
       operationId: get-can-id-info
       description: Get all the available information about one trash bin
-  
   '/api/admin/can/{id}':
     parameters:
       - schema:
@@ -127,8 +124,8 @@ paths:
         in: path
         required: true
     put:
-      summary: 'Update a trash can information'
-      description: 'Update a trash can information'
+      summary: Update a trash can information
+      description: Update a trash can information
       operationId: put-admin-can-id
       responses:
         '200':
@@ -161,8 +158,8 @@ paths:
           name: id
           description: The id of the trash bin
     delete:
-      summary: 'Delete a trash can from the system'
-      description: 'Delete a trash can from the system'
+      summary: Delete a trash can from the system
+      description: Delete a trash can from the system
       operationId: delete-admin-can-id
       responses:
         '200':
@@ -181,11 +178,10 @@ paths:
           in: query
           name: id
           description: The id of the trash bin
-  
   /api/admin/can:
     post:
-      summary: 'Create a new trash can'
-      description: 'Create a new trash can'
+      summary: Create a new trash can
+      description: Create a new trash can
       operationId: post-admin-can
       responses:
         '201':
@@ -205,13 +201,15 @@ paths:
                     id: string
         '401':
           $ref: '#/components/responses/AccessUnauthorized'
+        '422':
+          description: Unprocessable Entity (WebDAV)
       security:
         - bearerAuth: []
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TrashCan'
+              $ref: '#/components/schemas/NewCan'
             examples:
               Example 1:
                 value:
@@ -222,12 +220,10 @@ paths:
       tags:
         - admin
         - can
-
-
   /api/auth/login:
     post:
-      summary: 'Request for long-lived connection'
-      description: 'Request for long-lived connection'
+      summary: Request for long-lived connection
+      description: Request for long-lived connection
       operationId: post-login
       responses:
         '200':
@@ -259,8 +255,8 @@ paths:
         - auth
   /api/auth/logout:
     post:
-      summary: 'End a long lived connection'
-      description: 'End a long lived connection'
+      summary: End a long lived connection
+      description: End a long lived connection
       operationId: post-api-auth-logout
       responses:
         '200':
@@ -281,8 +277,8 @@ paths:
         - auth
   /api/auth/refresh:
     post:
-      summary: 'Request for an access token'
-      description: 'Request for an access token'
+      summary: Request for an access token
+      description: Request for an access token
       operationId: post-api-auth-refresh
       responses:
         '200':
@@ -315,7 +311,6 @@ paths:
       tags:
         - auth
 components:
-  
   responses:
     InvalidIDs:
       description: Invalid username/password
@@ -323,7 +318,6 @@ components:
       description: Access token is missing or invalid
     RefreshUnauthorized:
       description: Refresh token is missing or invalid
-  
   schemas:
     TrashCan:
       title: TrashCan
@@ -356,7 +350,6 @@ components:
       required:
         - time
         - fillingRate
-    
     LoginCredentials:
       title: LoginCredentials
       type: object
@@ -405,7 +398,18 @@ components:
         - access
         - refresh
       description: 'The user access token, voucher of his authorization(s) and a possibly renewed refresh token.'
-  
+    NewCan:
+      title: NewCan
+      type: object
+      properties:
+        id:
+          type: string
+        longitude:
+          type: number
+        latitude:
+          type: number
+        publicKey:
+          type: string
   securitySchemes:
     bearerAuth:
       type: http

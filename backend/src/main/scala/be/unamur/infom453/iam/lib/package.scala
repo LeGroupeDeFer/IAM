@@ -16,28 +16,29 @@ package object lib {
 
   /* --------------------- Global & global implicits ---------------------- */
 
-  implicit val ec: ExecutionContext       = global
-  implicit val api /* TODO Annotation */  = models.api
-  implicit val db: models.api.Database    = models.db
-  implicit val zoneOffset: ZoneOffset     = ZoneOffset.UTC
-  implicit val clock: Clock               = Clock.systemUTC
+  implicit val ec: ExecutionContext = global
+  implicit val api /* TODO Annotation */ = models.api
+  implicit val db: models.api.Database = models.db
+  implicit val zoneOffset: ZoneOffset = ZoneOffset.UTC
+  implicit val clock: Clock = Clock.systemUTC
 
-  val insertionError    = new Exception("Unable to insert")
-  val updateError       = new Exception("Unable to update")
-  val persistenceError  = new Exception("Entity was not saved to the database yet")
-  val invalidPassword   = new Exception("Invalid password")
-  val invalidIDs        = new Exception("Invalid authentication IDs")
-  val invalidToken      = new Exception("Invalid token")
-  val usernameTaken     = new Exception("Username in use")
+  val insertionError = new Exception("Unable to insert")
+  val updateError = new Exception("Unable to update")
+  val persistenceError = new Exception("Entity was not saved to the database yet")
+  val invalidPassword = new Exception("Invalid password")
+  val invalidIDs = new Exception("Invalid authentication IDs")
+  val invalidToken = new Exception("Invalid token")
+  val usernameTaken = new Exception("Username in use")
+  val missingAttribute = new Exception("At least one attribute is missing")
 
   case class TokenException(
-    private val message: String,
-    private val cause: Throwable = None.orNull
-  ) extends Exception
+                             private val message: String,
+                             private val cause: Throwable = None.orNull
+                           ) extends Exception
 
-  val expiredToken: TokenException    = TokenException("This token has expired")
-  val malformedToken: TokenException  = TokenException("Malformed token")
-  val absentToken: TokenException     = TokenException("Token was not provided")
+  val expiredToken: TokenException = TokenException("This token has expired")
+  val malformedToken: TokenException = TokenException("Malformed token")
+  val absentToken: TokenException = TokenException("Token was not provided")
 
   /* -------------------------- Utils functions --------------------------- */
 

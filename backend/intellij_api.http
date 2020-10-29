@@ -1,0 +1,59 @@
+# @name apiTest
+
+GET http://localhost:8000/api/noodles
+Accept: text/plain
+Cache-Control: no-cache
+
+### ------------------------------------------------------------ LOGIN SUCCESS
+
+POST http://localhost:8000/api/auth/login
+Accept: application/json
+Cache-Control: no-cache
+Content-Type: application/json
+
+
+{
+  "username": "john",
+  "password": "secret"
+}
+
+
+> {%
+    client.global.set("refresh_token", response.body.token);
+%}
+
+### ------------------
+
+POST http://localhost:8000/api/auth/refresh
+Accept: application/json
+Cache-Control: no-cache
+
+
+{ "username": "john", "token": "{{refresh_token}}" }
+
+
+> {%
+    client.global.set("access_token", response.body.access);
+    client.global.set("refresh_token", response.body.refresh);
+
+%}
+
+### --------------------
+
+POST http://localhost:8000/api/admin/can/
+Content-Type: application/json
+Cache-Control: no-cache
+Authorization: Bearer {{access_token}}
+
+{
+  "id": "",
+  "latitude": 50.457758,
+  "longitude": 4.851422,
+  "publicKey": "dblablakjlkbjalkj"
+}
+
+> {%
+ client.test("Request", function (){
+     client.assert(true)
+ })
+ %}

@@ -15,8 +15,8 @@ object extensions {
   import slick.dbio.NoStream
 
   implicit class SqlActionExtension[+R, +S <: slick.dbio.NoStream, -E <: slick.dbio.Effect](
-    a: DBIOAction[R, S, E]
-   ) {
+                                                                                             a: DBIOAction[R, S, E]
+                                                                                           ) {
 
     def execute(implicit ec: ExecutionContext, db: Database): Future[R] =
       db.run(a)
@@ -89,7 +89,7 @@ object extensions {
   // Can Extension
 
   implicit class CanExtension[C[_]](q: Query[Cans, Can, C]) {
-    
+
     // specify mapping of relationship to address
     def active: Query[Cans, Can, C] =
       q.filter(_.deletedAt.isEmpty)
@@ -102,6 +102,9 @@ object extensions {
 
     def withData =
       q.joinLeft(canDatas).on(_.id === _.canId)
+
+    def insert(can: Can): DBIOAction[Int, NoStream, Effect.Write] =
+      cans returning cans.map(_.id) += can
 
   }
 
