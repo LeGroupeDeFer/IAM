@@ -1,7 +1,23 @@
 <script>
-  import Navbar from "../../components/overall/Navbar.svelte";
-  import Map from '../../components/dashboard/Map.svelte';
-	import MapMarker from '../../components/dashboard/MapMarker.svelte';
+  import Map from "../../components/dashboard/Map.svelte";
+  import MapMarker from "../../components/dashboard/MapMarker.svelte";
+
+  const cansMockUp = [
+    {
+      id: "Can id 1",
+      longitude: 4.857599,
+      latitude: 50.465856,
+      publicKey: "ah oui oui oui",
+    },
+    {
+      id: "Can id 2",
+      longitude: 4.867699,
+      latitude: 50.464846,
+      publicKey: "string",
+    },
+  ];
+  const cans = cansMockUp;
+  // TODO : Implement connection with backend to get the list of cans
 </script>
 
 <style>
@@ -11,9 +27,10 @@
   }
 </style>
 
-<Navbar />
-<div class='mapbox'>
+<div class="mapbox">
   <Map lat={50.4667} lon={4.8667} zoom={14.5}>
-    <MapMarker lat={50.465856} lon={4.857599} label="UNamur Eco-inf cans"/>
+    {#each cans as can}
+      <MapMarker lat={can.latitude} lon={can.longitude} label={can.id} />
+    {/each}
   </Map>
 </div>

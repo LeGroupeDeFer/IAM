@@ -1,4 +1,5 @@
 <script>
+  import Navbar from "./components/overall/Navbar.svelte";
   import Auth from "./pages/auth/Auth.svelte";
   import Admin from "./pages/admin/Admin.svelte";
   import Dashboard from "./pages/dashboard/Dashboard.svelte";
@@ -9,6 +10,7 @@
 </script>
 
 <Router {url}>
+  <Navbar />
   <Route path="/" component={Dashboard} />
   <Route path="admin" component={Admin} />
   <Route path="auth">
