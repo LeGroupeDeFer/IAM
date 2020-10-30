@@ -1,9 +1,10 @@
 <script>
   import AuthGuard from "../../components/auth/AuthGuard.svelte";
-  import Can from "../../components/admin/Can.svelte";
+  import CanCell from "../../components/admin/CanCell.svelte";
   import NewCanModal from "../../components/admin/NewCanModal.svelte";
   import { Link } from "svelte-routing";
-  import { Button } from "sveltestrap";
+  import { Button, Table } from "sveltestrap";
+  import TextInput from "../../components/overall/TextEdit.svelte";
 
   let openedModal = false;
   const toggleModal = () => (openedModal = !openedModal);
@@ -43,15 +44,9 @@
     padding-top: 5vh;
     vertical-align: middle;
   }
-
   .center {
     text-align: center;
   }
-
-  .can {
-    padding-bottom: 0.3em;
-  }
-
   .add-btn-container {
     position: fixed;
     bottom: 0;
@@ -63,7 +58,9 @@
 </style>
 
 <div class="container">
-  <AuthGuard reverse>
+  <h1 class="text-primary">Administration panel</h1>
+  <hr />
+  <AuthGuard >
     <p class="center">
       Please,
       <Link to="auth">authenticate</Link>
@@ -71,13 +68,22 @@
     </p>
   </AuthGuard>
 
-  <AuthGuard>
-    {#each cans as can}
-      <div class="can">
-        <Can {can} on:deleteToggled={deleteCan} />
-      </div>
-    {/each}
-
+  <AuthGuard reverse>
+    <Table hover responsive>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Latitude</th>
+          <th>Longitude</th>
+          <th />
+        </tr>
+      </thead>
+      <tbody>
+        {#each cans as can}
+          <CanCell {can} on:remove={deleteCan} />
+        {/each}
+      </tbody>
+    </Table>
     <div class="add-btn-container">
       <Button outline color="primary" size="lg" on:click={toggleModal}>
         Add a can

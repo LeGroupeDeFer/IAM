@@ -1,18 +1,26 @@
 <script>
-  import { FormGroup, Input } from "sveltestrap";
+  import { Input } from "sveltestrap";
 
   export let text = "";
   let toggled = false;
 </script>
 
+<style>
+  div {
+    width: fit-content;
+  }
+</style>
+
 {#if !toggled}
-  <span on:dblclick={() => toggled=true}><p>{text}</p></span>
+  <div on:dblclick={() => (toggled = true)}>
+    <p>{text}</p>
+  </div>
 {:else}
-  <FormGroup>
+  <div>
     <Input
       type="text"
       placeholder="Enter the new name for the can"
-      bind:value={text} 
-      on:blur={() => toggled=false}/>
-    </FormGroup>
+      bind:value={text}
+      on:blur={() => (toggled = false)} />
+  </div>
 {/if}
