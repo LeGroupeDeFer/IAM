@@ -60,7 +60,7 @@
 <div class="container">
   <h1 class="text-primary">Administration panel</h1>
   <hr />
-  <AuthGuard >
+  <AuthGuard reverse>
     <p class="center">
       Please,
       <Link to="auth">authenticate</Link>
@@ -68,7 +68,7 @@
     </p>
   </AuthGuard>
 
-  <AuthGuard reverse>
+  <AuthGuard>
     <Table hover responsive>
       <thead>
         <tr>
