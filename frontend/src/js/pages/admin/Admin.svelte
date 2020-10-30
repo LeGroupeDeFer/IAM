@@ -2,10 +2,13 @@
   import AuthGuard from "../../components/auth/AuthGuard.svelte";
   import CanCell from "../../components/admin/CanCell.svelte";
   import NewCanModal from "../../components/admin/NewCanModal.svelte";
+  import Notification from "../../components/overall/Notification.svelte";
+  import { api } from "../../lib";
   import { Link } from "svelte-routing";
   import { Button, Table } from "sveltestrap";
-  import TextInput from "../../components/overall/TextEdit.svelte";
 
+  let errors = [];
+  let timeout;
   let openedModal = false;
   const toggleModal = () => (openedModal = !openedModal);
 
@@ -25,17 +28,30 @@
     },
   ];
 
-  function addCan(event) {
-    // api.can.add(newCan)
+  async function addCan(event) {
     const { id, latitude, longitude, publicKey } = event.detail;
-    const newCan = { id, longitude, latitude, publicKey };
-    cans = [...cans, newCan];
+    try {
+      await api.admin.add(id, longitude, latitude, publicKey);
+      cans = [...cans, { id, longitude, latitude, publicKey }];
+    } catch (error) {
+      console.error(error);
+      errors = [...errors, error.toString()];
+    }
   }
 
-  function deleteCan(event) {
-    // api.can.remove(id) TODO
-    cans = cans.filter((can) => can.id !== event.detail.id);
+  async function deleteCan(event) {
+    try {
+      await api.admin.delete(event.detail.id);
+      cans = cans.filter((can) => can.id !== event.detail.id);
+    } catch (error) {
+      console.error(error);
+      errors = [...errors, error.toString()];
+    }
   }
+
+  $: errors,
+    window.clearInterval(timeout),
+    (timeout = setInterval(() => (errors = ""), 5000));
 </script>
 
 <style>
@@ -96,3 +112,15 @@
   isOpen={openedModal}
   on:toggle={toggleModal}
   on:addToggled={addCan} />
+
+<Notification isOpen={errors.length > 0}>
+  <span slot="header">Something went wrong...</span>
+  <div slot="body">
+    {#each errors as error, index}
+      <p>{error}</p>
+      {#if !(errors.length == 1 || errors.length == index +1) }
+        <hr />
+      {/if}
+    {/each}
+  </div>
+</Notification>

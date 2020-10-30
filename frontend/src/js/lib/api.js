@@ -59,8 +59,8 @@ const encode = encodeURIComponent;
  * TODO
  */
 class APIError extends Error {
-  
-  constructor(code, message, data={}) {
+
+  constructor(code, message, data = {}) {
     super(message);
     this.code = code;
     this.message = message;
@@ -151,13 +151,13 @@ async function api(endpoint, { body, ...providedConfig } = {}) {
  * 
  * @returns {Promise<any>} The request response
  */
-async function auth(endpoint, config={}) {
+async function auth(endpoint, config = {}) {
   return api(`/auth${endpoint}`, config);
 }
 
 
 Object.assign(auth, {
-  
+
   /**
    * Clears all authentication state. This implies that API-wise, the user is
    * disconnected and his session is terminated. If authentication data is
@@ -254,7 +254,7 @@ Object.assign(auth, {
    * @returns {boolean} true if a user is connected, false otherwise.
    */
   connected() {
-    if(currentAccessToken === null)
+    if (currentAccessToken === null)
       return false;
     return currentAccessToken.exp > Date.now();
   }
@@ -272,7 +272,7 @@ Object.assign(auth, {
  * 
  * @returns {Promise<Can>} TODO
  */
-async function can(identifier, config={}) {
+async function can(identifier, config = {}) {
   return api(`/can/${identifier}`, config);
 }
 
@@ -287,13 +287,13 @@ async function can(identifier, config={}) {
  * 
  * @returns {Promise<Array<Can>>} TODO
  */
-async function cans(endpoint='', config={}) {
+async function cans(endpoint = '', config = {}) {
   return api(`/cans${endpoint}`, config);
 }
 
 
 Object.assign(cans, {
-  
+
   /**
    * TODO
    * 
@@ -316,18 +316,52 @@ Object.assign(cans, {
 /**
  * TODO
  * 
- * @param {string} endpoint TODO
+ * @param {string} args TODO
  * @param {RequestInit} config TODO
  * 
  * @returns {Promise<object>} TODO
  */
-async function admin(endpoint, config={}) {
-  return api(`/admin${endpoint}`, config);
+async function admin(args = "", config = {}) {
+  return api(`/admin/can/${args}`, config);
 }
 
 
 Object.assign(admin, {
-  // TODO
+
+  async update(id, lontitude, lagitude, publicKey, newId = id) {
+    const refreshData = store.getItem('__refresh_data__') || '';
+    const [username, token] = refreshData.split(':');
+
+    if (!token)
+      throw new APIError(403, 'Unable to find/parse local refresh token');
+
+    await admin(id, {
+      body: {
+        id: newId, lontitude, lagitude, publicKey
+      },
+      method: "PUT",
+    });
+  },
+
+  async delete(id) {
+    const refreshData = store.getItem('__refresh_data__') || '';
+    const [username, token] = refreshData.split(':');
+
+    if (!token)
+      throw new APIError(403, 'Unable to find/parse local refresh token');
+
+    await admin(id, { method: "DELETE" })
+  },
+
+  async add(id, longitude, latitude, publicKey) {
+    const refreshData = store.getItem('__refresh_data__') || '';
+    const [username, token] = refreshData.split(':');
+
+    if (!token)
+      throw new APIError(403, 'Unable to find/parse local refresh token');
+
+    await admin(config = { id, latitude, longitude, publicKey })
+  }
 });
 
 
