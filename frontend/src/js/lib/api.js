@@ -299,14 +299,9 @@ Object.assign(cans, {
    * 
    * @returns {Promise<Can>} TODO
    */
-  add() { /* TODO */ return Promise.reject('Not implemented'); },
-
-  /**
-   * TODO
-   * 
-   * @returns {Promise<void>} TODO
-   */
-  remove() { /* TODO */ return Promise.reject('Not implemented'); },
+  add() { 
+    
+  },
 
 });
 
@@ -322,20 +317,14 @@ Object.assign(cans, {
  * @returns {Promise<object>} TODO
  */
 async function admin(args = "", config = {}) {
-  return api(`/admin/can/${args}`, config);
+  // Access token bearer is handled within the api method
+  return api(`/admin/can/${args}`, { ...config, token });
 }
 
 
 Object.assign(admin, {
-
   async update(id, lontitude, lagitude, publicKey, newId = id) {
-    const refreshData = store.getItem('__refresh_data__') || '';
-    const [username, token] = refreshData.split(':');
-
-    if (!token)
-      throw new APIError(403, 'Unable to find/parse local refresh token');
-
-    await admin(id, {
+    return admin(id, {
       body: {
         id: newId, lontitude, lagitude, publicKey
       },
@@ -344,23 +333,11 @@ Object.assign(admin, {
   },
 
   async delete(id) {
-    const refreshData = store.getItem('__refresh_data__') || '';
-    const [username, token] = refreshData.split(':');
-
-    if (!token)
-      throw new APIError(403, 'Unable to find/parse local refresh token');
-
-    await admin(id, { method: "DELETE" })
+    return admin(id, { method: "DELETE" })
   },
 
   async add(id, longitude, latitude, publicKey) {
-    const refreshData = store.getItem('__refresh_data__') || '';
-    const [username, token] = refreshData.split(':');
-
-    if (!token)
-      throw new APIError(403, 'Unable to find/parse local refresh token');
-
-    await admin(config = { id, latitude, longitude, publicKey })
+    return admin(config = { id, latitude, longitude, publicKey })
   }
 });
 
