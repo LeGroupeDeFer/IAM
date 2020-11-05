@@ -322,13 +322,15 @@ components:
           type: number
         publicKey:
           type: string
+        signProtocol:
+          type: string
         data:
           type: array
           items:
             $ref: '#/components/schemas/TrashCanSample'
       required:
         - id
-        - publicKey
+        - signProtocol
     TrashCanSample:
       title: TrashCanSample
       type: object
@@ -400,6 +402,11 @@ components:
           type: number
         publicKey:
           type: string
+        signProtocol:
+          type: string
+      required:
+        - id
+        - signProtocol
     Sync:
       title: Sync
       type: object
