@@ -8,7 +8,6 @@
   import { Button, Table } from "sveltestrap";
 
   let errors = [];
-  let timeout;
   let openedModal = false;
   const toggleModal = () => (openedModal = !openedModal);
 
@@ -48,10 +47,6 @@
       errors = [...errors, error.toString()];
     }
   }
-
-  $: errors,
-    window.clearInterval(timeout),
-    (timeout = setInterval(() => (errors = ""), 5000));
 </script>
 
 <style>
@@ -113,14 +108,6 @@
   on:toggle={toggleModal}
   on:addToggled={addCan} />
 
-<Notification isOpen={errors.length > 0}>
+<Notification bind:messages={errors}>
   <span slot="header">Something went wrong...</span>
-  <div slot="body">
-    {#each errors as error, index}
-      <p>{error}</p>
-      {#if !(errors.length == 1 || errors.length == index +1) }
-        <hr />
-      {/if}
-    {/each}
-  </div>
 </Notification>

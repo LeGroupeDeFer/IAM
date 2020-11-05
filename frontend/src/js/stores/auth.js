@@ -20,10 +20,13 @@ function createAuth() {
     if (api.auth.inSession())
       throw new AuthError('AuthContext.login: Already connected');
 
-    const token = await api.auth.login(username, password);
-    set(token);
-    
-    refreshTimeout = setTimeout(refresh, (token.exp - now() - refreshDelay) * 1000);
+    try {
+      const token = await api.auth.login(username, password);
+      set(token);
+      refreshTimeout = setTimeout(refresh, (token.exp - now() - refreshDelay) * 1000);
+    } catch (e) {
+      throw e;
+    }
   }
 
   async function logout() {
@@ -39,7 +42,7 @@ function createAuth() {
   async function refresh() {
     if (!api.auth.inSession())
       throw new AuthError('AuthContext.refresh: Not connected');
-    
+
     try {
       const token = await api.auth.refresh();
       set(token);
