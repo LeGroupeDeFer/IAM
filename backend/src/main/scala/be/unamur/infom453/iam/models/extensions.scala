@@ -53,7 +53,6 @@ object extensions {
 
     def token: Query[Tokens, Token, C] = q.withToken.map(_._2)
 
-
     def insert(user: User): DBIOAction[Int, NoStream, Effect.Write] =
       users returning users.map(_.id) += user
 
@@ -106,6 +105,11 @@ object extensions {
     def insert(can: Can): DBIOAction[Int, NoStream, Effect.Write] =
       cans returning cans.map(_.id) += can
 
+    def update(can: Can): DBIOAction[Int, NoStream, Effect.Write] =
+      q.map(c => (c.latitude, c.longitude, c.publicKey)).update((can.latitude, can.longitude, can.publicKey))
+
+    def delete: DBIOAction[Int, NoStream, Effect.Write] =
+      q.map(c => c.deletedAt).update(Some(timestampNow()))
   }
 
   // Can Data Extension

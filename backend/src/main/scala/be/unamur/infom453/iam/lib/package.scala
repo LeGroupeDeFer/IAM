@@ -30,6 +30,7 @@ package object lib {
   val invalidToken = new Exception("Invalid token")
   val usernameTaken = new Exception("Username in use")
   val missingAttribute = new Exception("At least one attribute is missing")
+  val idMismatch = new Exception("The ids do not match")
 
   case class TokenException(
                              private val message: String,
