@@ -33,9 +33,10 @@ pip install -r requirements.txt
 
 The private key MUST be of `PEM` format.
  
-You should use the following command to generate the key pair
+You should use the following commands to generate the key pair
 ```shell script
-ssh-keygen -b 2048 -t rsa -p -m pem
+openssl genrsa -out rsa.private 2048
+openssl rsa -in rsa.private -out rsa.public -pubout -outform PEM
 ```
 
 ## Files

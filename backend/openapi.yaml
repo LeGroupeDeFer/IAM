@@ -35,20 +35,9 @@ paths:
       parameters: []
       requestBody:
         content:
-          text/plain:
-            schema:
-              type: string
-            examples:
-              Example 1:
-                value: averylongencryptedpayload
           application/json:
             schema:
-              type: object
-              properties: {}
-            examples:
-              example-1:
-                value: {}
-        description: The can private key encrypted synchronization payload
+              $ref: '#/components/schemas/Sync'
   /api/cans:
     get:
       summary: The set of trash cans this server handles
@@ -140,7 +129,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TrashCan'
+              $ref: '#/components/schemas/NewCan'
             examples:
               Example 1:
                 value:
@@ -411,6 +400,17 @@ components:
           type: number
         publicKey:
           type: string
+    Sync:
+      title: Sync
+      type: object
+      properties:
+        signature:
+          type: string
+        data:
+          $ref: '#/components/schemas/TrashCanSample'
+      required:
+        - signature
+        - data
   securitySchemes:
     bearerAuth:
       type: http
