@@ -1,10 +1,13 @@
 <script>
   import AuthGuard from "../../components/auth/AuthGuard.svelte";
-  import Can from "../../components/admin/Can.svelte";
+  import CanCell from "../../components/admin/CanCell.svelte";
   import NewCanModal from "../../components/admin/NewCanModal.svelte";
+  import Notification from "../../components/overall/Notification.svelte";
+  import { api } from "../../lib";
   import { Link } from "svelte-routing";
-  import { Button } from "sveltestrap";
+  import { Button, Table } from "sveltestrap";
 
+  let errors = [];
   let openedModal = false;
   const toggleModal = () => (openedModal = !openedModal);
 
@@ -24,16 +27,25 @@
     },
   ];
 
-  function addCan(event) {
-    // api.can.add(newCan)
+  async function addCan(event) {
     const { id, latitude, longitude, publicKey } = event.detail;
-    const newCan = { id, longitude, latitude, publicKey };
-    cans = [...cans, newCan];
+    try {
+      await api.admin.add(id, longitude, latitude, publicKey);
+      cans = [...cans, { id, longitude, latitude, publicKey }];
+    } catch (error) {
+      console.error(error);
+      errors = [...errors, error.toString()];
+    }
   }
 
-  function deleteCan(event) {
-    // api.can.remove(id) TODO
-    cans = cans.filter((can) => can.id !== event.detail.id);
+  async function deleteCan(event) {
+    try {
+      await api.admin.delete(event.detail.id);
+      cans = cans.filter((can) => can.id !== event.detail.id);
+    } catch (error) {
+      console.error(error);
+      errors = [...errors, error.toString()];
+    }
   }
 </script>
 
@@ -43,15 +55,9 @@
     padding-top: 5vh;
     vertical-align: middle;
   }
-
   .center {
     text-align: center;
   }
-
-  .can {
-    padding-bottom: 0.3em;
-  }
-
   .add-btn-container {
     position: fixed;
     bottom: 0;
@@ -63,6 +69,8 @@
 </style>
 
 <div class="container">
+  <h1 class="text-primary">Administration panel</h1>
+  <hr />
   <AuthGuard reverse>
     <p class="center">
       Please,
@@ -72,12 +80,21 @@
   </AuthGuard>
 
   <AuthGuard>
-    {#each cans as can}
-      <div class="can">
-        <Can {can} on:deleteToggled={deleteCan} />
-      </div>
-    {/each}
-
+    <Table hover responsive>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Latitude</th>
+          <th>Longitude</th>
+          <th />
+        </tr>
+      </thead>
+      <tbody>
+        {#each cans as can}
+          <CanCell {can} on:remove={deleteCan} />
+        {/each}
+      </tbody>
+    </Table>
     <div class="add-btn-container">
       <Button outline color="primary" size="lg" on:click={toggleModal}>
         Add a can
@@ -90,3 +107,7 @@
   isOpen={openedModal}
   on:toggle={toggleModal}
   on:addToggled={addCan} />
+
+<Notification bind:messages={errors}>
+  <span slot="header">Something went wrong...</span>
+</Notification>

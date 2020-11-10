@@ -1,4 +1,5 @@
 <script>
+  import { createEventDispatcher } from "svelte";
   import { Form, FormGroup, Input, Label, Button } from "sveltestrap";
   import { navigate } from "svelte-routing";
   import auth from "iam/stores/auth";
@@ -6,12 +7,21 @@
 
   let username = "";
   let password = "";
+
   $: canLogin = username.length && password.length;
 
+  const dipatch = createEventDispatcher();
   const clear = () => (username = password = "");
-  const onLogin = (e) => {
-    e.preventDefault() || (auth.login(username, password) && clear());
-    navigate('/');
+  const onLogin = async (e) => {
+    e.preventDefault();
+    try {
+      await auth.login(username, password);
+      dipatch("success");
+    } catch (error) {
+      console.error(error);
+      dipatch("error", { error: error.toString() });
+    }
+    clear();
   };
   const onLogout = (e) => e.preventDefault() || auth.logout();
 </script>

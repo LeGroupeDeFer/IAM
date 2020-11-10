@@ -1,8 +1,11 @@
 <script>
   import Form from "../../components/auth/Form.svelte";
-  import { Link } from "svelte-routing";
+  import Notification from "../../components/overall/Notification.svelte";
+  import { Link, navigate } from "svelte-routing";
 
   export let version;
+
+  let errors = [];
 </script>
 
 <style>
@@ -39,5 +42,11 @@
   </a>
 
   <hr />
-  <Form />
+  <Form
+    on:success={() => navigate('/')}
+    on:error={(event) => (errors = [...errors, event.detail.error])} />
 </div>
+
+<Notification bind:messages={errors}>
+  <span slot="header">Something went wrong...</span>
+</Notification>
