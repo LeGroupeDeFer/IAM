@@ -1,7 +1,9 @@
 package be.unamur.infom453.iam.controllers.api
 
 import be.unamur.infom453.iam.models.{Can, CanData, CanTable}
+
 import be.unamur.infom453.iam.lib._
+import be.unamur.infom453.iam.lib.sign._
 import wvlet.airframe.http.{Endpoint, HttpMethod, Router}
 
 import scala.concurrent.Future
@@ -58,12 +60,30 @@ trait APIController {
   } yield CanResponse.from(a, b)
 
   @Endpoint(method = HttpMethod.POST, path = "/can/:identifier/sync")
-  def sync(identifier: String, payload: syncPayload): Future[String] = {
-    (for {
-      can <- CanTable.byIdentifier(identifier)
-      publicKey = RSASign.publicKeyFromString(can.publicKey)
-      _ <- RSASign.verify(publicKey, payload.signature, payload.data.toString)
-    } yield "Ok").recoverWith(ErrorResponse.recover[String](406))
-  }
+  def sync(identifier: String, payload: syncPayload): Future[String] =
+    CanTable.byIdentifier(identifier)
+      .map(can => {
+        availableProtocols.filter(_.code == can.signProtocol).head match {
+
+
+          case RSAProtocol =>
+            val publicKey = RSASign.publicKeyFromString(can.publicKey)
+            for {
+              v <- RSASign.verify(publicKey, payload.signature, payload.data.toString)
+            } yield v
+
+
+          case NoneProtocol => Future {
+            true
+          }
+
+        }
+      })
+      .map(_ => {
+        CanManager.addData(identifier, payload.data.time, payload.data.fillingRate)
+        "Ok"
+      })
+      .recoverWith(ErrorResponse.recover[String](406))
+
 }
 

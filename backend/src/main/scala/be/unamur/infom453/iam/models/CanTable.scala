@@ -14,7 +14,7 @@ object CanTable {
 
   /* ------------------------ ORM class definition ------------------------ */
 
-  case class Can(id: Option[Int], identifier: String, latitude: Double, longitude: Double, publicKey: String)
+  case class Can(id: Option[Int], identifier: String, latitude: Double, longitude: Double, publicKey: String, signProtocol: String)
 
   class Cans(tag: Tag) extends Table[Can](tag, "cans") {
 
@@ -29,10 +29,12 @@ object CanTable {
 
     def publicKey: Rep[String] = column[String]("public_key", O.Length(2048))
 
+    def signProtocol: Rep[String] = column[String]("sign_protocol")
+
     def deletedAt: Rep[Option[Timestamp]] = column[Option[Timestamp]]("deleted_at")
 
     // Projection
-    def * = (id.?, identifier, latitude, longitude, publicKey) <> (Can.tupled, Can.unapply)
+    def * = (id.?, identifier, latitude, longitude, publicKey, signProtocol) <> (Can.tupled, Can.unapply)
 
   }
 

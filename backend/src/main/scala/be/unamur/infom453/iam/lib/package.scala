@@ -2,7 +2,9 @@ package be.unamur.infom453.iam
 
 import java.io.File
 import java.sql.Timestamp
+import java.text.SimpleDateFormat
 import java.time.{Clock, Instant, ZoneOffset}
+import java.util.Date
 
 import com.twitter.{util => twitter}
 import org.mindrot.jbcrypt.BCrypt
@@ -53,6 +55,11 @@ package object lib {
 
   def timestampNow(): Timestamp =
     Timestamp.from(now)
+
+  def instantFromString(t: String): Instant = {
+    val date: Date = new SimpleDateFormat("yyyy-MM-ddhh:mm:ss").parse(t)
+    date.toInstant
+  }
 
   def timestampAfter(seconds: Long): Timestamp =
     Timestamp.from(after(seconds))

@@ -114,6 +114,11 @@ object extensions {
 
   // Can Data Extension
 
+  implicit class CanDataExtension[C[_]](q: Query[CanDatas, CanData, C]) {
+    def insert(canData: CanData): DBIOAction[Int, NoStream, Effect.Write] =
+      canDatas returning canDatas.map(_.id) += canData
+  }
+
   // TODO
 
 }
