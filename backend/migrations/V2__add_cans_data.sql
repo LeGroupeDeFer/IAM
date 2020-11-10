@@ -10,4 +10,4 @@ CREATE TABLE can_data (
 
     PRIMARY KEY (id),
     FOREIGN KEY (can_id) REFERENCES cans (id)
-)
+);

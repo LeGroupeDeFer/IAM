@@ -6,6 +6,8 @@ SCALA_MAJOR_VERSION=$(echo $SCALA_VERSION | sed -E "s/([0-9]+)\.([0-9]+)\.([0-9]
 SBT_JAR_DIR="/usr/src/app/backend/target/scala-${SCALA_MAJOR_VERSION}/"
 ASSETS_DIR="${SBT_JAR_DIR}/assets"
 
+rm -f /tmp/backend.pid
+rm -f /tmp/frontend.pid
 cd /usr/src/app/
 
 # UTILS
@@ -20,6 +22,7 @@ safe_kill() {
     log "WARNING: Process was not shutdown properly"
   else
     kill -9 $PID
+    echo "waht"
   fi
 }
 
@@ -85,11 +88,11 @@ reload() {
 # TRAPS
 cleanup() {
   if [ -f /tmp/backend.pid ]; then
-    kill -9 $(cat /tmp/backend.pid)
+    safe_kill -9 $(cat /tmp/backend.pid)
     rm /tmp/backend.pid
   fi
   if [ -f /tmp/frontend.pid ]; then
-    kill -9 $(cat /tmp/frontend.pid)
+    safe_kill -9 $(cat /tmp/frontend.pid)
     rm /tmp/frontend.pid
   fi
   exit 0
