@@ -1,6 +1,9 @@
 <script>
   import Map from "../../components/dashboard/Map.svelte";
+  import Popup from "../../components/dashboard/Popup.svelte";
   import MapMarker from "../../components/dashboard/MapMarker.svelte";
+
+  let selectedCan;
 
   const cansMockUp = [
     {
@@ -21,16 +24,21 @@
 </script>
 
 <style>
-  .mapbox {
-    height: 75vh;
-    margin: 1rem;
+  main {
+    display: table-row;
+    height: 100%;
   }
 </style>
 
-<div class="mapbox">
+<main>
   <Map lat={50.4667} lon={4.8667} zoom={14.5}>
-    {#each cans as can}
-      <MapMarker lat={can.latitude} lon={can.longitude} label={can.id} />
+    {#each cans as { id, latitude, longitude }}
+      <MapMarker
+        {latitude}
+        {longitude}
+        {id}
+        on:click={(e) => (selectedCan = e.detail.id)} />
     {/each}
+    <Popup bind:canID={selectedCan} />
   </Map>
-</div>
+</main>
