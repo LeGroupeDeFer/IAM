@@ -1,18 +1,23 @@
 <script>
-  import { getContext } from "svelte";
+  import { getContext, createEventDispatcher } from "svelte";
   import { mapbox, key } from "../../lib/mapbox.js";
 
   const { getMap } = getContext(key);
   const map = getMap();
+  const dispatch = createEventDispatcher();
 
-  export let lat;
-  export let lon;
-  export let label;
-
-  const popup = new mapbox.Popup({ offset: 25 }).setText(label);
+  export let latitude;
+  export let longitude;
+  export let id;
 
   const marker = new mapbox.Marker()
-    .setLngLat([lon, lat])
-    .setPopup(popup)
+    .setLngLat([longitude, latitude])
     .addTo(map);
+
+  marker
+    .getElement()
+    .addEventListener("click", () => dispatch("click", { id }));
+
+  // FIXME : no working
+  marker.on("mousehover", () => dispatch("click", { id }));
 </script>
