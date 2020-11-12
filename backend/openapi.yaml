@@ -60,6 +60,7 @@ paths:
                       longitude: 0
                       latitude: 0
                       publicKey: string
+                      currentFill: string
             application/xml:
               schema:
                 type: array
@@ -72,6 +73,7 @@ paths:
                       longitude: 25.26
                       latitude: 12.58
                       publicKey: (...)
+                      currentFill: 54 # percentage
       operationId: get-admin-cans
       description: Get all trash can information
     parameters: []
@@ -324,6 +326,8 @@ components:
           type: string
         signProtocol:
           type: string
+        currentFill:
+          type: number
         data:
           type: array
           items:
