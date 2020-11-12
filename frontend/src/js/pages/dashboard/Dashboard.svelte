@@ -1,7 +1,7 @@
 <script>
   import Map from "../../components/dashboard/Map.svelte";
-  import Popup from "../../components/dashboard/Popup.svelte";
-  import MapMarker from "../../components/dashboard/MapMarker.svelte";
+  import Information from "../../components/dashboard/Information.svelte";
+  import CanMarker from "../../components/dashboard/CanMarker.svelte";
 
   let selectedCan;
 
@@ -11,12 +11,28 @@
       longitude: 4.857599,
       latitude: 50.465856,
       publicKey: "ah oui oui oui",
+      currentFill: 45,
     },
     {
       id: "Can id 2",
       longitude: 4.867699,
       latitude: 50.464846,
       publicKey: "string",
+      currentFill: 78,
+    },    
+    {
+      id: "Can id 3",
+      longitude: 4.853198,
+      latitude:  50.462912,  
+      publicKey: "string",
+      currentFill: 25,
+    },
+    {
+      id: "Can id 4",
+      longitude: 4.8610839,
+      latitude: 50.4657973,
+      publicKey: "string",
+      currentFill: 10,
     },
   ];
   const cans = cansMockUp;
@@ -32,13 +48,11 @@
 
 <main>
   <Map lat={50.4667} lon={4.8667} zoom={14.5}>
-    {#each cans as { id, latitude, longitude }}
-      <MapMarker
-        {latitude}
-        {longitude}
-        {id}
-        on:click={(e) => (selectedCan = e.detail.id)} />
+    {#each cans as can}
+      <CanMarker {can} on:click={(e) => (selectedCan = e.detail.can)} />
     {/each}
-    <Popup bind:canID={selectedCan} />
+    {#if selectedCan}
+      <Information bind:can={selectedCan} />
+    {/if}
   </Map>
 </main>
