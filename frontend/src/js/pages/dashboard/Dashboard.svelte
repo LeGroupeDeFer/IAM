@@ -24,13 +24,13 @@
 </script>
 
 <style>
-  .mapbox {
-    height: 75vh;
-    margin: 1rem;
+  main {
+    display: table-row;
+    height: 100%;
   }
 </style>
 
-<div class="mapbox">
+<main>
   <Map lat={50.4667} lon={4.8667} zoom={14.5}>
     {#each cans as { id, latitude, longitude }}
       <MapMarker
@@ -41,4 +41,4 @@
     {/each}
     <Popup bind:canID={selectedCan} />
   </Map>
-</div>
+</main>
