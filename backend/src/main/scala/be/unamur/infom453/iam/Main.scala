@@ -11,7 +11,7 @@ object Main extends App {
 
   // TODO - flags
 
-  URLConnection.setDefaultUseCaches("file", false)
+  //URLConnection.setDefaultUseCaches("file", false)
 
   val server = Finagle.server
     .withName("IAM")

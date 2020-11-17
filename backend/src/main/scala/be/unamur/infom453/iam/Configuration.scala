@@ -15,6 +15,7 @@ object Configuration extends FinagleFilter {
       "DB_DATABASE" -> "iam",
       "DB_USER"     -> "iam",
       "DB_PASSWORD" -> "secret",
+      "DB_SSL"      -> "false",
 
       "JWT_ACCESS_KEY" -> "secret",
       "JWT_ACCESS_LIFETIME" -> (5 * 60).toString,
@@ -23,9 +24,10 @@ object Configuration extends FinagleFilter {
 
     val host = store("DB_HOST")
     val port = store("DB_PORT")
+    val ssl = store("DB_SSL")
     val schema = store("DB_DATABASE")
 
-    store + ("DB_URI" -> s"jdbc:mysql://${host}:${port}/${schema}")
+    store + ("DB_URI" -> s"jdbc:mysql://${host}:${port}/${schema}?useSSL=${ssl}")
   }
 
   // Not used yet

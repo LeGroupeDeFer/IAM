@@ -7,7 +7,6 @@ import be.unamur.infom453.iam.lib.jarDirectory
 object StaticController {
 
   val routes: Router = Router.of[StaticController]
-  Console.err.println(s"$jarDirectory")
   val asset: StaticContent = StaticContent.fromDirectory(s"$jarDirectory/assets")
 
 }
