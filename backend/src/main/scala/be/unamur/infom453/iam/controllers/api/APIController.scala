@@ -26,20 +26,24 @@ object APIController {
 
 
   case class CanResponse(
-                          id: Int,
-                          identifier: String,
-                          latitude: Double,
+                          id: String,
                           longitude: Double,
+                          latitude: Double,
+                          publicKey: String,
+                          signProtocol: String,
+                          currentFill: Double,
                           data: Seq[CanDataResponse]
                         )
 
   object CanResponse {
     def from(can: Can, canData: Seq[CanData]): CanResponse =
       CanResponse(
-        can.id.get,
         can.identifier,
-        can.latitude,
         can.longitude,
+        can.latitude,
+        can.publicKey,
+        can.signProtocol,
+        canData.maxBy(_.moment).fillingRate,
         canData.map(CanDataResponse.from)
       )
   }
@@ -52,11 +56,12 @@ trait APIController {
   import APIController._
 
   @Endpoint(method = HttpMethod.GET, path = "/cans")
-  def getAllCans: Future[Seq[Can]] = CanTable.all()
+  def getAllCans: Future[Seq[CanResponse]] =
+    CanTable.allData().map(_.map { case (a: Can, b: Seq[CanData]) => CanResponse.from(a, b) })
 
   @Endpoint(method = HttpMethod.GET, path = "/can/:identifier")
   def getOneCan(identifier: String): Future[CanResponse] = for {
-    (a, b) <- CanTable.allData(identifier)
+    (a, b) <- CanTable.getWithData(identifier)
   } yield CanResponse.from(a, b)
 
   @Endpoint(method = HttpMethod.POST, path = "/can/:identifier/sync")
