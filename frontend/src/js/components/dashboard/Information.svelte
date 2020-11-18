@@ -17,11 +17,17 @@
   let color = getColor(can.currentFill);
   let showStatistics = false;
 
+  const dispatch = createEventDispatcher();
+
   function getColor(currentFill) {
     // FIXME : Get color from CSS variables
     return ["primary", "secondary", "warning", "danger"][
       Math.round(currentFill / 25.0)
     ];
+  }
+
+  function close() {
+    dispatch("close", {});
   }
 
   $: can, (color = getColor(can.currentFill)), (showStatistics = false);
@@ -63,37 +69,33 @@
   }
 </style>
 
-{#if can}
-  <div class="container">
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          <h5>{can.id}</h5>
-        </CardTitle>
-        <div class="close-button" on:click={() => (can = null)}>
-          <span>&times;</span>
-        </div>
-      </CardHeader>
-      <CardBody>
-        <CardText>
-          TODO : check last time a filling rate was given so we can tell if
-          there is a problem
-          <hr />
-          TODO : indicate the last time it was emptied
-          <hr />
-          <Button outline on:click={() => (showStatistics = !showStatistics)}>
-            Statistics
-          </Button>
-        </CardText>
-      </CardBody>
-      <CardFooter>
-        <Progress animated bar value={can.currentFill} {color}>
-          {can.currentFill}
-        </Progress>
-      </CardFooter>
-    </Card>
-    {#if showStatistics}
-      <Card body>TODO : showStatistics</Card>
-    {/if}
-  </div>
-{/if}
+<div class="container">
+  <Card>
+    <CardHeader>
+      <CardTitle>
+        <h5>{can.id}</h5>
+      </CardTitle>
+      <div class="close-button" on:click={close}><span>&times;</span></div>
+    </CardHeader>
+    <CardBody>
+      <CardText>
+        TODO : check last time a filling rate was given so we can tell if there
+        is a problem
+        <hr />
+        TODO : indicate the last time it was emptied
+        <hr />
+        <Button outline on:click={() => (showStatistics = !showStatistics)}>
+          Statistics
+        </Button>
+      </CardText>
+    </CardBody>
+    <CardFooter>
+      <Progress animated bar value={can.currentFill} {color}>
+        {can.currentFill}
+      </Progress>
+    </CardFooter>
+  </Card>
+  {#if showStatistics}
+    <Card body>TODO : showStatistics</Card>
+  {/if}
+</div>

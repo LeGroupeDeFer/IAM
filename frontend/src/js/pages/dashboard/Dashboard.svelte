@@ -19,11 +19,11 @@
       latitude: 50.464846,
       publicKey: "string",
       currentFill: 78,
-    },    
+    },
     {
       id: "Can id 3",
       longitude: 4.853198,
-      latitude:  50.462912,  
+      latitude: 50.462912,
       publicKey: "string",
       currentFill: 25,
     },
@@ -52,7 +52,9 @@
       <CanMarker {can} on:click={(e) => (selectedCan = e.detail.can)} />
     {/each}
     {#if selectedCan}
-      <Information bind:can={selectedCan} />
+      <Information
+        bind:can={selectedCan}
+        on:close={() => (selectedCan = undefined)} />
     {/if}
   </Map>
 </main>
