@@ -17,12 +17,11 @@ log() {
 
 safe_kill() {
   PID=$1
-  ps -o pid | grep "$PID" >/dev/null
+  ps -o pid | grep -q $PID
   if [ ! $? -eq 0 ]; then
     log "WARNING: Process was not shutdown properly"
   else
     kill -9 $PID
-    echo "waht"
   fi
 }
 
@@ -35,7 +34,7 @@ migrate() {
    -url="jdbc:${DB_DRIVER}://${DB_HOST}:${DB_PORT}/${DB_DATABASE}"\
    -user=${DB_USER} \
    -password=${DB_PASSWORD} \
-   -locations="filesystem:/usr/src/app/backend/migrations" > migrations.log 2>&1
+   -locations="filesystem:/usr/src/app/backend/migrations" > ../migrations.log 2>&1
   
   cd ..
 }

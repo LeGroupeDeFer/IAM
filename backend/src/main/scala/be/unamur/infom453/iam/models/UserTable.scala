@@ -1,6 +1,5 @@
 package be.unamur.infom453.iam.models
 
-import scala.concurrent.{ExecutionContext, Future}
 import be.unamur.infom453.iam.lib._
 
 
@@ -8,7 +7,7 @@ object UserTable {
 
   import api._
 
-  /* ------------------------ ORM class definition ------------------------ */
+  /* ------------------------ ORM class definition ------------------------- */
 
   case class User(
     id: Option[Int],
@@ -35,17 +34,4 @@ object UserTable {
 
   val users = TableQuery[Users]
 
-  /* --------------------- ORM Manipulation functions --------------------- */
-
-  def byName(name: String)(
-    implicit ec: ExecutionContext,
-    db: Database
-  ): Future[Option[User]] = singleOption(users.filter(_.username === name))
-
-  def byId(id: Int)(
-    implicit ec: ExecutionContext,
-    db: Database
-  ): Future[Option[User]] = singleOption(users.filter(_.id === id))
-
 }
-

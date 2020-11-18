@@ -3,24 +3,35 @@ package be.unamur.infom453.iam.controllers.api
 import com.twitter.util.{Future => TwitterFuture}
 import wvlet.airframe.http.{Endpoint, HttpMethod, Router}
 import be.unamur.infom453.iam.{lib => IAM}
+import be.unamur.infom453.iam.lib.Guide
 
 
-object AuthController {
+object AuthController extends Guide {
 
-  case class RegisterRequest(username: String, password: String)
-
-  case class LoginRequest(username: String, password: String)
-  case class LoginResponse(token: String)
-
-  case class LogoutRequest(username: String, token: String)
-  case class User(id: Int, username: String)
-
-  case class RefreshRequest(username: String, token: String)
-  case class RefreshResponse(refresh: String, access: String)
+  /* ------------------------------- Routes -------------------------------- */
 
   val routes: Router = Router.of[AuthController]
 
+  /* --------------- Request / Response classes and objects ---------------- */
+
+  sealed trait AuthRequest
+  sealed trait AuthResponse
+
+  case class RegisterRequest(username: String, password: String) extends AuthRequest
+
+  case class LoginRequest(username: String, password: String) extends AuthRequest
+  case class LoginResponse(token: String) extends AuthResponse
+
+  case class LogoutRequest(username: String, token: String) extends AuthRequest
+  // case class User(id: Int, username: String)
+
+  case class RefreshRequest(username: String, token: String) extends AuthRequest
+  case class RefreshResponse(refresh: String, access: String) extends AuthResponse
+
+
 }
+
+/* ------------------------------ Controller ------------------------------- */
 
 @Endpoint(path="/api/auth")
 trait AuthController {
