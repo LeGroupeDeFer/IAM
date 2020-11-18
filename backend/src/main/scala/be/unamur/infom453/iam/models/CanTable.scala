@@ -47,10 +47,25 @@ object CanTable {
   def all()(implicit ec: ExecutionContext, db: Database): Future[Seq[Can]] =
     queryAll(cans.active)
 
+  /**
+   * Parse all cans in the database. For each can, look for the associated data and return it as a whole.
+   *
+   * This function should have been implemented differently : use only one call to DB instead of two !
+   * But you know, I chose the (bad and) easier way
+   *
+   * @return a sequence of tuples containing the can and its associated data
+   */
+  def allData()(implicit ec: ExecutionContext, db: Database): Future[Seq[(Can, Seq[CanData])]] = all()
+    .flatMap(cansResult => Future.sequence(
+      cansResult
+        .map(_.identifier)
+        .map(getWithData(_))
+    ))
+
   def byIdentifier(identifier: String)(implicit ec: ExecutionContext, db: Database): Future[Can] =
     single(cans.active.withIdentifier(identifier))
 
-  def allData(identifier: String)(implicit ec: ExecutionContext, db: Database): Future[(Can, Seq[CanData])] =
+  def getWithData(identifier: String)(implicit ec: ExecutionContext, db: Database): Future[(Can, Seq[CanData])] =
     queryAll(cans.active.withIdentifier(identifier).withData)
       .map(result => (result.head._1, result.flatMap(_._2)))
 
