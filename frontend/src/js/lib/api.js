@@ -299,8 +299,8 @@ Object.assign(cans, {
    * 
    * @returns {Promise<Can>} TODO
    */
-  add() { 
-    
+  async get() { 
+    return cans()
   },
 
 });
