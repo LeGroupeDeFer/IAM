@@ -1,10 +1,8 @@
 package be.unamur.infom453.iam.models
 
 import java.sql.Timestamp
-import java.time.{Instant, LocalDateTime}
+import java.time.Instant
 
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Random
 import be.unamur.infom453.iam.lib._
 
 
@@ -12,7 +10,7 @@ object TokenTable {
 
   import api._
 
-  /* ------------------------ ORM class definition ------------------------ */
+  /* ------------------------ ORM class definition ------------------------- */
 
   case class Token(
     id: Option[Int],
@@ -20,16 +18,32 @@ object TokenTable {
     creationDate: Instant,
     expirationDate: Option[Instant]
   ) {
+
     def ttl: Long = expirationDate
       .map(_.getEpochSecond - now.getEpochSecond)
       .getOrElse(0)
+
+    override def equals(obj: Any): Boolean = obj match {
+      case that: Token => that.id == this.id
+      case _           => false
+    }
+
   }
 
-  private def tokenTupled(row: (Option[Int], String, Timestamp, Option[Timestamp])): Token =
-    Token(row._1, row._2, row._3.toInstant, row._4.map(_.toInstant))
+  /* ----------------------------- Projection ----------------------------- */
 
-  private def tokenUnapply(t: Token): Option[(Option[Int], String, Timestamp, Option[Timestamp])] =
-    Some(t.id, t.hash, Timestamp from t.creationDate, t.expirationDate.map(Timestamp.from))
+  type TokenTuple = (Option[Int], String, Timestamp, Option[Timestamp])
+
+  // Tuple -> Token
+  private def tokenApply(t: TokenTuple): Token =
+    Token(t._1, t._2, t._3.toInstant, t._4.map(_.toInstant))
+
+  // Token -> Tuple
+  private def tokenUnapply(t: Token): Option[TokenTuple] = Some(
+    t.id, t.hash, Timestamp from t.creationDate, t.expirationDate.map(Timestamp.from)
+  )
+
+  /* -------------------------- Table definition --------------------------- */
 
   class Tokens(tag: Tag) extends Table[Token](tag, "tokens") {
 
@@ -40,11 +54,10 @@ object TokenTable {
     def expirationDate: Rep[Timestamp]  = column[Timestamp]("expiration_date")
 
     // Projection
-    def * = (id.?, hash, creationDate, expirationDate.?) <> (tokenTupled, tokenUnapply)
+    def * = (id.?, hash, creationDate, expirationDate.?) <> (tokenApply, tokenUnapply)
 
   }
 
   val tokens = TableQuery[Tokens]
 
 }
-

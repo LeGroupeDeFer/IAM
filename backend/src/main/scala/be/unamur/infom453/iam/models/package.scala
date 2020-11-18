@@ -1,22 +1,26 @@
 package be.unamur.infom453.iam
 
 import be.unamur.infom453.iam.Configuration.store
+import slick.jdbc
+import slick.jdbc.MySQLProfile
 
 
 package object models {
 
   // Expose everything needed for db manipulations here (to facilitate imports)
 
-  implicit val api = slick.jdbc.MySQLProfile.api
+  implicit val api: jdbc.MySQLProfile.API =
+    slick.jdbc.MySQLProfile.api
 
   import api._
 
-  implicit val db = Database.forURL(
-    store("DB_URI"),
-    store("DB_USER"),
-    store("DB_PASSWORD"),
-    driver = "com.mysql.cj.jdbc.Driver"
-  )
+  implicit val db: MySQLProfile.backend.DatabaseDef =
+    Database.forURL(
+      store("DB_URI"),
+      store("DB_USER"),
+      store("DB_PASSWORD"),
+      driver = "com.mysql.cj.jdbc.Driver"
+    )
 
   type Users = UserTable.Users
   type User = UserTable.User
@@ -30,8 +34,8 @@ package object models {
   type Can = CanTable.Can
   val cans = CanTable.cans
 
-  // There's an english mistake, data is not countable and doesn't have a plural form
-  type CanDatas = CanDataTable.CanDatas
-  type CanData = CanDataTable.CanData
-  val canDatas = CanDataTable.canDatas
+  type CanSamples = CanSampleTable.CanSamples
+  type CanSample = CanSampleTable.CanSample
+  val canSamples = CanSampleTable.canSamples
+
 }

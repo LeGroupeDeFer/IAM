@@ -1,54 +1,75 @@
 package be.unamur.infom453.iam.controllers.api
 
-import be.unamur.infom453.iam.models.{Can, CanData, CanTable}
-
 import be.unamur.infom453.iam.lib._
-import be.unamur.infom453.iam.lib.sign._
+import be.unamur.infom453.iam.models.CanSampleTable.CanSample
+import be.unamur.infom453.iam.models.CanTable.Can
 import wvlet.airframe.http.{Endpoint, HttpMethod, Router}
 
 import scala.concurrent.Future
 
-object APIController {
+object APIController extends Guide {
+
+  /* ------------------------------- Routes -------------------------------- */
 
   val routes: Router = Router.of[APIController]
 
-  case class CanDataResponse(time: String, fillingRate: Double) {
+  /* --------------- Request / Response classes and objects ---------------- */
+
+  sealed trait APIRequest
+  sealed trait APIResponse
+
+  object CanSampleResponse {
+
+    def from(canSample: CanSample): CanSampleResponse =
+      CanSampleResponse(canSample.moment.toString, canSample.fillingRate)
+
+  }
+
+  case class CanSampleResponse(
+    time: String,
+    fillingRate: Double
+  ) extends APIResponse {
+
     override def toString: String =
-      "{\"time\":\"" + time + "\",\"fillingRate\":" + fillingRate + "}"
+      s"""{"time": "${time}", "fillingRate": ${fillingRate}}"""
+
   }
-
-  case class syncPayload(signature: String, data: CanDataResponse)
-
-  object CanDataResponse {
-    def from(canData: CanData): CanDataResponse =
-      CanDataResponse(canData.moment.toString, canData.fillingRate)
-  }
-
-
-  case class CanResponse(
-                          id: String,
-                          longitude: Double,
-                          latitude: Double,
-                          publicKey: String,
-                          signProtocol: String,
-                          currentFill: Double,
-                          data: Seq[CanDataResponse]
-                        )
 
   object CanResponse {
-    def from(can: Can, canData: Seq[CanData]): CanResponse =
+
+    def from(can: Can, canSample: Seq[CanSample]): CanResponse =
       CanResponse(
         can.identifier,
         can.longitude,
         can.latitude,
         can.publicKey,
-        can.signProtocol,
-        canData.maxBy(_.moment).fillingRate,
-        canData.map(CanDataResponse.from)
+        can.signProtocol.code,
+        canSample.maxBy(_.moment).fillingRate,
+        canSample.map(CanSampleResponse.from)
       )
+
   }
 
+  type CanSampleRequest = CanSampleResponse
+
+  case class CanResponse(
+    id: String,
+    longitude: Double,
+    latitude: Double,
+    publicKey: String,
+    signProtocol: String,
+    currentFill: Double,
+    data: Seq[CanSampleResponse]
+  ) extends APIResponse
+
+  case class SyncRequest(
+    signature: String,
+    data: CanSampleRequest
+  ) extends APIRequest
+
 }
+
+/* ------------------------------ Controller ------------------------------- */
 
 @Endpoint(path = "/api")
 trait APIController {
@@ -56,39 +77,33 @@ trait APIController {
   import APIController._
 
   @Endpoint(method = HttpMethod.GET, path = "/cans")
-  def getAllCans: Future[Seq[CanResponse]] =
-    CanTable.allData().map(_.map { case (a: Can, b: Seq[CanData]) => CanResponse.from(a, b) })
+  def getAllCans: Future[Seq[CanResponse]] = Can
+    .allSampled
+    .map(_.map(row => CanResponse.from(row._1, row._2)))
 
   @Endpoint(method = HttpMethod.GET, path = "/can/:identifier")
-  def getOneCan(identifier: String): Future[CanResponse] = for {
-    (a, b) <- CanTable.getWithData(identifier)
-  } yield CanResponse.from(a, b)
+  def getOneCan(identifier: String): Future[CanResponse] = Can
+    .byIdentifierSampled(identifier)
+    .map(result => CanResponse.from(result._1, result._2))
+    .recoverWith(ErrorResponse.recover[CanResponse](404))
 
   @Endpoint(method = HttpMethod.POST, path = "/can/:identifier/sync")
-  def sync(identifier: String, payload: syncPayload): Future[String] =
-    CanTable.byIdentifier(identifier)
-      .map(can => {
-        availableProtocols.filter(_.code == can.signProtocol).head match {
-
-
-          case RSAProtocol =>
-            val publicKey = RSASign.publicKeyFromString(can.publicKey)
-            for {
-              v <- RSASign.verify(publicKey, payload.signature, payload.data.toString)
-            } yield v
-
-
-          case NoneProtocol => Future {
-            true
-          }
-
-        }
-      })
-      .map(_ => {
-        CanManager.addData(identifier, payload.data.time, payload.data.fillingRate)
-        "Ok"
-      })
-      .recoverWith(ErrorResponse.recover[String](406))
+  def sync(identifier: String, payload: SyncRequest): Future[String] = Can
+    .byIdentifier(identifier)
+    .flatMap(can =>
+      can.signProtocol.verify(
+        can.publicKey,
+        payload.signature,
+        payload.data.toString
+      ).map(_ => can)
+    ).flatMap(can =>
+      can.add(CanSample(
+        None,
+        can.id.get,
+        instantFromString(payload.data.time),
+        payload.data.fillingRate
+      )).map(_ => "Ok")
+    ).recoverWith(ErrorResponse.recover[String](406))
 
 }
 

@@ -27,7 +27,7 @@ object Auth extends FinagleFilter {
   /* TODO Find a simple way to add users */
 
   import api._
-  import extensions._
+  import Ops._
 
   val jwtRefreshLifetime: Long = store("JWT_REFRESH_LIFETIME").toLong
   val jwtAccessLifetime: Long = store("JWT_ACCESS_LIFETIME").toLong

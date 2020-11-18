@@ -9,7 +9,7 @@ import wvlet.airframe.http.finagle.FinagleFilter
 object Configuration extends FinagleFilter {
 
   val store: Map[String, String] = {
-    val store = Map(
+    val defaults = Map(
       "DB_HOST"     -> "127.0.0.1",
       "DB_PORT"     -> "3306",
       "DB_DATABASE" -> "iam",
@@ -22,12 +22,12 @@ object Configuration extends FinagleFilter {
       "JWT_REFRESH_LIFETIME" -> (14 * 24 * 60 * 60).toString
     ) ++ sys.env
 
-    val host = store("DB_HOST")
-    val port = store("DB_PORT")
-    val ssl = store("DB_SSL")
-    val schema = store("DB_DATABASE")
+    val host = defaults("DB_HOST")
+    val port = defaults("DB_PORT")
+    val ssl = defaults("DB_SSL")
+    val schema = defaults("DB_DATABASE")
 
-    store + ("DB_URI" -> s"jdbc:mysql://${host}:${port}/${schema}?useSSL=${ssl}")
+    defaults + ("DB_URI" -> s"jdbc:mysql://${host}:${port}/${schema}?useSSL=${ssl}")
   }
 
   // Not used yet

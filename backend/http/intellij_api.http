@@ -49,7 +49,8 @@ Authorization: Bearer {{access_token}}
   "id": "whalla",
   "latitude": 50.457758,
   "longitude": 4.851422,
-  "publicKey": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCYRSKRffqYuTeEnFrtdaOh9CIzkdSIj+NMmmTr91BcZtR7L9F6kw6MagwYpgA6BcnAfMOiiX98xI5mBV/FRISnLRlFORqktM0HAmqfabIrAXjyct975HVuYsGWXLXiBjBY9khvNKMy5XvEp/rvPMMq0x47uPICNZKWfRxnfh3PLP3oWG+H/3LJCNh8K/qm2IR59pHnoNZQusRrdFoSJj/OU2SKQXdPJYCm5jjGDwI5CzbzTkWiOz0DF5YlsknxcBL4s8mNNu1AEXH1o3BJWXtJGmBI2Na7kyYpMjZDbCpK9QNPbqT/jExvIYXoDbpYHtkjLel5DWG6i3PxqPVPxPHP taz@taztower"
+  "publicKey": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCYRSKRffqYuTeEnFrtdaOh9CIzkdSIj+NMmmTr91BcZtR7L9F6kw6MagwYpgA6BcnAfMOiiX98xI5mBV/FRISnLRlFORqktM0HAmqfabIrAXjyct975HVuYsGWXLXiBjBY9khvNKMy5XvEp/rvPMMq0x47uPICNZKWfRxnfh3PLP3oWG+H/3LJCNh8K/qm2IR59pHnoNZQusRrdFoSJj/OU2SKQXdPJYCm5jjGDwI5CzbzTkWiOz0DF5YlsknxcBL4s8mNNu1AEXH1o3BJWXtJGmBI2Na7kyYpMjZDbCpK9QNPbqT/jExvIYXoDbpYHtkjLel5DWG6i3PxqPVPxPHP taz@taztower",
+  "signProtocol": "rsa"
 }
 
 > {%
@@ -72,6 +73,11 @@ Authorization: Bearer {{access_token}}
   }
 }
 
+> {%
+ client.test("Request", function (){
+     client.assert(true)
+ })
+ %}
 
 ### --------------------------
 

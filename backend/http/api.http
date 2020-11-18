@@ -81,7 +81,7 @@ Cache-Control: no-cache
 
 ### ----------------------------------------------------------- LOGOUT FAILURE
 
-# @name logoutSuccess
+# @name logoutFailure
 POST http://localhost:8000/api/auth/logout
 Accept: application/json
 Cache-Control: no-cache

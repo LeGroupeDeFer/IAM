@@ -2,12 +2,18 @@ package be.unamur.infom453.iam.controllers
 
 import wvlet.airframe.http.HttpMessage.Response
 import wvlet.airframe.http.{Endpoint, Router, StaticContent}
+
 import be.unamur.infom453.iam.lib.jarDirectory
+import be.unamur.infom453.iam.lib.Guide
 
-object StaticController {
 
-  val routes: Router = Router.of[StaticController]
-  val asset: StaticContent = StaticContent.fromDirectory(s"$jarDirectory/assets")
+object StaticController extends Guide {
+
+  val routes: Router =
+    Router.of[StaticController]
+  
+  val asset: StaticContent =
+    StaticContent.fromDirectory(s"$jarDirectory/assets")
 
 }
 
