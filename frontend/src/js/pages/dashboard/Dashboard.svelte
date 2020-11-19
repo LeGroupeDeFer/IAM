@@ -19,6 +19,8 @@
   function getCans() {
     cansRequest = api.cans.get();
   }
+  
+  // TODO : Connect with backend when mockup is done
 </script>
 
 <style>
@@ -39,10 +41,11 @@
 <main>
   <Map lat={50.4667} lon={4.8667} zoom={14.5}>
     {#await cansRequest}
-      <div class="center">
+      <div color="primary" class="center">
         <Spinner type="grow" />
       </div>
     {:then cans}
+      {(cans = [{ id: 'Can id 1', longitude: 4.857599, latitude: 50.465856, publicKey: 'ah oui oui oui', currentFill: 35 }, { id: 'Can id 2', longitude: 4.867699, latitude: 50.464846, publicKey: 'string', currentFill: 84 }])}
       {#each cans as can}
         <CanMarker {can} on:click={(e) => (selectedCan = e.detail.can)} />
       {/each}

@@ -10,11 +10,15 @@
     CardTitle,
     Button,
     Progress,
+    Alert,
   } from "sveltestrap";
+  import { api } from "../../lib";
 
   export let can;
 
-  let color = getColor(can.currentFill);
+  let data = [];
+  let alertColor = "secondary";
+  let progressColor = getColor(can.currentFill);
   let showStatistics = false;
 
   const dispatch = createEventDispatcher();
@@ -30,8 +34,78 @@
     dispatch("close", {});
   }
 
-  $: can, (color = getColor(can.currentFill)), (showStatistics = false);
-  // TODO : connect to backend
+  async function retrieveFillingRates(id) {
+    // TODO : connect to backend
+    // data = (await api.can(id)).data
+    data = [
+      {
+        time: "1575909015200",
+        fillingRate: 23,
+      },
+      {
+        time: "1575909015300",
+        fillingRate: 36,
+      },
+      {
+        time: "1575909015400",
+        fillingRate: 75,
+      },
+      {
+        time: "1575909015500",
+        fillingRate: 90,
+      },
+      {
+        time: "1605815840000",
+        fillingRate: 50,
+      },
+      {
+        time: "1605815840200",
+        fillingRate: 52,
+      },
+      {
+        time: "1605815840900",
+        fillingRate: 60,
+      },
+      {
+        time: "1605815841000",
+        fillingRate: 69,
+      },
+    ];
+  }
+
+  function getLastDump() {
+    // FIXME: modify backend and openapi
+    data.forEach((info) => (info.time = parseInt(info.time)));
+
+    const lastDump = data
+      .sort((a, b) => a.time - b.time)
+      .reduce((acc, info) => {
+        if (info.fillingRate < acc.lastFillingRate) {
+          return {
+            time: info.time,
+            fillingRate: info.fillingRate,
+            lastFillingRate: info.fillingRate,
+          };
+        } else {
+          return { ...acc, lastFillingRate: info.fillingRate };
+        }
+      });
+    return { time: lastDump.time, fillingRate: lastDump.fillingRate };
+  }
+
+  function getDaysSinceLastDump() {
+    return (Date.now() - getLastDump().time) / (60 * 60 * 24 * 1000);
+  }
+
+  $: {
+    can;
+    showStatistics = false;
+    progressColor = getColor(can.currentFill);
+    retrieveFillingRates(can.id);
+    if (getDaysSinceLastDump() > 5) alertColor = "danger";
+    else if (getDaysSinceLastDump() > 2) alertColor = "danger";
+    else alertColor = "success";
+  }
 </script>
 
 <style>
@@ -79,10 +153,10 @@
     </CardHeader>
     <CardBody>
       <CardText>
-        TODO : check last time a filling rate was given so we can tell if there
-        is a problem
-        <hr />
-        TODO : indicate the last time it was emptied
+        <Alert color={alertColor}>
+          <h6>Last dumping :</h6>
+          {new Date(getLastDump().time).toLocaleString()}
+        </Alert>
         <hr />
         <Button outline on:click={() => (showStatistics = !showStatistics)}>
           Statistics
@@ -90,7 +164,7 @@
       </CardText>
     </CardBody>
     <CardFooter>
-      <Progress animated bar value={can.currentFill} {color}>
+      <Progress animated bar value={can.currentFill} color={progressColor}>
         {can.currentFill}
       </Progress>
     </CardFooter>
