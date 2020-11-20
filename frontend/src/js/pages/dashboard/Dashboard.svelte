@@ -2,7 +2,6 @@
   import Map from "../../components/dashboard/Map.svelte";
   import Information from "../../components/dashboard/Information.svelte";
   import CanMarker from "../../components/dashboard/CanMarker.svelte";
-  import Notification from "../../components/overall/Notification.svelte";
   import { api } from "../../lib";
   import {
     Button,
@@ -19,8 +18,8 @@
   function getCans() {
     cansRequest = api.cans.get();
   }
-  
-  // TODO : Connect with backend when mockup is done
+
+  // TODO: Verify connexion with backend really works
 </script>
 
 <style>
@@ -45,7 +44,6 @@
         <Spinner type="grow" />
       </div>
     {:then cans}
-      {(cans = [{ id: 'Can id 1', longitude: 4.857599, latitude: 50.465856, publicKey: 'ah oui oui oui', currentFill: 35 }, { id: 'Can id 2', longitude: 4.867699, latitude: 50.464846, publicKey: 'string', currentFill: 84 }])}
       {#each cans as can}
         <CanMarker {can} on:click={(e) => (selectedCan = e.detail.can)} />
       {/each}

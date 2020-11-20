@@ -5,78 +5,33 @@
     Card,
     CardBody,
     CardHeader,
-    CardFooter,
     CardText,
     CardTitle,
-    Button,
     Progress,
     Alert,
+    Spinner,
+    Button,
   } from "sveltestrap";
   import { api } from "../../lib";
 
   export let can;
 
-  let data = [];
-  let alertColor = "secondary";
-  let progressColor = getColor(can.currentFill);
-  let showStatistics = false;
+  let data;
 
   const dispatch = createEventDispatcher();
-
-  function getColor(currentFill) {
-    // FIXME : Get color from CSS variables
-    return ["primary", "secondary", "warning", "danger"][
-      Math.round(currentFill / 25.0)
-    ];
-  }
 
   function close() {
     dispatch("close", {});
   }
 
   async function retrieveFillingRates(id) {
-    // TODO : connect to backend
-    // data = (await api.can(id)).data
-    data = [
-      {
-        time: "1575909015200",
-        fillingRate: 23,
-      },
-      {
-        time: "1575909015300",
-        fillingRate: 36,
-      },
-      {
-        time: "1575909015400",
-        fillingRate: 75,
-      },
-      {
-        time: "1575909015500",
-        fillingRate: 90,
-      },
-      {
-        time: "1605815840000",
-        fillingRate: 50,
-      },
-      {
-        time: "1605815840200",
-        fillingRate: 52,
-      },
-      {
-        time: "1605815840900",
-        fillingRate: 60,
-      },
-      {
-        time: "1605815841000",
-        fillingRate: 69,
-      },
-    ];
+    return await api.can(id);
   }
 
-  function getLastDump() {
+  function getLastDump(data) {
     // FIXME: modify backend and openapi
     data.forEach((info) => (info.time = parseInt(info.time)));
-
+    if (data.length < 1) return {};
     const lastDump = data
       .sort((a, b) => a.time - b.time)
       .reduce((acc, info) => {
@@ -93,19 +48,38 @@
     return { time: lastDump.time, fillingRate: lastDump.fillingRate };
   }
 
-  function getDaysSinceLastDump() {
-    return (Date.now() - getLastDump().time) / (60 * 60 * 24 * 1000);
+  function getNumberOfRequest(data) {
+    //TODO: implement
+    return 78;
   }
 
-  $: {
-    can;
-    showStatistics = false;
-    progressColor = getColor(can.currentFill);
-    retrieveFillingRates(can.id);
-    if (getDaysSinceLastDump() > 5) alertColor = "danger";
-    else if (getDaysSinceLastDump() > 2) alertColor = "danger";
-    else alertColor = "success";
+  function getProgressColor(currentFill) {
+    // FIXME: Get color from CSS variables
+    return ["primary", "info", "warning", "danger"][
+      Math.round(currentFill / 25.0)
+    ];
   }
+
+  function getDumpingColor(data) {
+    const nbDays =
+      (Date.now() - getLastDump(data).time) / (60 * 60 * 24 * 1000);
+    if (nbDays > 5) return "danger";
+    else if (nbDays > 2) return "warning";
+    else return "info";
+  }
+
+  function getRequestColor(nbRequests) {
+    // Cans are supposed to send their filling rate every 30 minutes
+    // For the last two days, we're supposed to have 96 differents requests
+    if (nbRequests >= 90) return "info";
+    else if (nbRequests >= 60) return "warning";
+    else return "danger";
+  }
+
+  // TODO: verify if connexion with backend really works
+  // TODO: Refactor this wonderful piece of code 
+
+  $: can, (data = retrieveFillingRates(can.id));
 </script>
 
 <style>
@@ -153,23 +127,38 @@
     </CardHeader>
     <CardBody>
       <CardText>
-        <Alert color={alertColor}>
-          <h6>Last dumping :</h6>
-          {new Date(getLastDump().time).toLocaleString()}
-        </Alert>
+        {#await data}
+          <Spinner type="grow" />
+        {:then can}
+          <Alert color={getDumpingColor(can.data)}>
+            <h6>Last dumping :</h6>
+            {new Date(getLastDump(can.data).time).toLocaleString()}
+          </Alert>
+          <hr />
+          <Alert color={getRequestColor(getNumberOfRequest(can.data))}>
+            <h6>Connexion state :</h6>
+            {getNumberOfRequest(can.data)}/96 requests received over the last 2
+            days
+          </Alert>
+        {:catch _}
+          <h6>Something went wrong...</h6>
+          <Button
+            color="warning"
+            on:click={() => (data = retrieveFillingRates(can.id))}>
+            Try again
+          </Button>
+        {/await}
         <hr />
-        <Button outline on:click={() => (showStatistics = !showStatistics)}>
-          Statistics
-        </Button>
+        <Alert color={getProgressColor(can.currentFill)}>
+          <h6>Current filling :</h6>
+          <Progress
+            animated
+            value={can.currentFill}
+            color={getProgressColor(can.currentFill)}>
+            {can.currentFill}%
+          </Progress>
+        </Alert>
       </CardText>
     </CardBody>
-    <CardFooter>
-      <Progress animated bar value={can.currentFill} color={progressColor}>
-        {can.currentFill}
-      </Progress>
-    </CardFooter>
   </Card>
-  {#if showStatistics}
-    <Card body>TODO : showStatistics</Card>
-  {/if}
 </div>
