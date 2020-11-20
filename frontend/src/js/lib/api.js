@@ -299,7 +299,7 @@ Object.assign(cans, {
    * 
    * @returns {Promise<Can>} TODO
    */
-  async get() { 
+  async get() {
     return cans()
   },
 
@@ -336,8 +336,8 @@ Object.assign(admin, {
     return admin(id, { method: "DELETE" })
   },
 
-  async add(id, longitude, latitude, publicKey) {
-    return admin(config = { id, latitude, longitude, publicKey })
+  async add(id, longitude, latitude, publicKey, signProtocol) {
+    return admin("", { id, latitude, longitude, publicKey, signProtocol })
   }
 });
 
