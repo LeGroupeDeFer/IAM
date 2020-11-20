@@ -10,7 +10,7 @@ const store = window.localStorage;
 
 /* istanbul ignore next */
 let currentAccessToken = null;
-
+let currentEncodedAccessToken = null;
 /* istanbul ignore next */
 const encode = encodeURIComponent;
 
@@ -98,8 +98,10 @@ Object.assign(query, { encode });
 async function api(endpoint, { body, ...providedConfig } = {}) {
   const headers = { 'content-type': 'application/json' };
 
-  if (currentAccessToken)
-    headers['Authorization'] = `Bearer ${currentAccessToken}`;
+  // if (currentAccessToken)
+  //   headers['Authorization'] = `Bearer ${currentAccessToken}`;
+  if (currentEncodedAccessToken)
+    headers['Authorization'] = `Bearer ${currentEncodedAccessToken}`;
 
   const method = providedConfig.method || (body ? 'POST' : 'GET');
   const config = {
@@ -226,6 +228,7 @@ Object.assign(auth, {
         { body: { username, token } }
       );
       currentAccessToken = jwtDecode(access);
+      currentEncodedAccessToken = access
       store.setItem('__refresh_data__', `${username}:${refresh}`);
       return currentAccessToken;
     } catch (e) {
@@ -318,7 +321,7 @@ Object.assign(cans, {
  */
 async function admin(args = "", config = {}) {
   // Access token bearer is handled within the api method
-  return api(`/admin/can/${args}`, { ...config, token });
+  return api(`/admin/can/${args}`, { ...config });
 }
 
 
@@ -337,7 +340,12 @@ Object.assign(admin, {
   },
 
   async add(id, longitude, latitude, publicKey, signProtocol) {
-    return admin("", { id, latitude, longitude, publicKey, signProtocol })
+    return admin("", {
+      body: {
+        id, latitude, longitude, publicKey, signProtocol
+      },
+      method: "POST",
+    })
   }
 });
 

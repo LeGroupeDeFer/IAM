@@ -10,11 +10,11 @@
 
   const toggleModal = () => (openedModal = !openedModal);
 
-  async function addCan(event, cans) {
+  async function addCan(event) {
     const { id, latitude, longitude, publicKey, signProtocol } = event.detail;
     try {
       await api.admin.add(id, longitude, latitude, publicKey, signProtocol);
-      cans = [...cans, { id, longitude, latitude, publicKey, signProtocol }];
+      cans = [...cans, { id, latitude, longitude, publicKey, signProtocol }];
     } catch (error) {
       console.error(error);
       errors = [...errors, error.toString()];
@@ -42,4 +42,4 @@
 <NewCanModal
   isOpen={openedModal}
   on:toggle={toggleModal}
-  on:addToggled={(e) => addCan(e, cans)} />
+  on:addToggled={(e) => addCan(e)} />
