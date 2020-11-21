@@ -1,83 +1,97 @@
 #!/usr/bin/env python
-"""
 
-"""
-from Phidget22.Phidget import *
 from Phidget22.Devices.VoltageRatioInput import *
-import time
-
-tab_last = ["" for _ in range(8)]
-change_count = 0
-units = ["%", "°C", "", "", "", "?", "cm", "cm"]
-
+import json
+from lib import sync
+from datetime import datetime
 
 # 0 : slider 60mm [P/N 1112(1)
 # 1 : temperature
 # 5 : IR reflective 10cm [P/N 1103(1)]
 # 6 : (right) sharp [SHARP 2Y0A21 F42] <-> IR adapter [P/N 1101 (O)]
 # 7 : (left) sharp [SHARP 2Y0A21 F08] <-> IR adapter [P/N 1101 (OA)]
+channels = {
+    6: '2Y0A21 F42',
+    7: '2Y0A21 F08'
+}
 
 
-def on_sensor_change(self, sensor_value, sensor_unit):
-    global change_count
-    change_count += 1
-    channel = self.getChannel()
-    tab_last[channel] = str(sensor_value)
-
-    if change_count % 10 == 0:
-        print_all_information()
-        if change_count > 1000000:
-            change_count = 0
+def reset_buffered_data() -> dict:
+    return {6: [], 7: []}
 
 
-def print_all_information(only_unit=False):
-    if only_unit:
-        print("\t".join(filter(lambda t: t != "", units)))
-    else:
-        print("\t".join(filter(lambda v: v != "", tab_last)))
-    pass
+last_sync = datetime.now().timestamp()
+sync_interval = 30  # (sec)
+buffered_data = reset_buffered_data()
+
+with open('parameters.json') as json_file:
+    data = json.load(json_file)
+
+
+def on_sharp_change(self, sensor_value, _sensor_unit):
+    global channels, data, last_sync, sync_interval, buffered_data
+
+    model = channels[self.getChannel()]
+    # if f(x) = m*x + c
+    # and we get sensor_value as f(x) (or y)
+    # to find x, we must calculate (y-c)/m
+    corrected_value = (float(sensor_value) - data[model]['c']) / data[model]['m']
+    buffered_data[self.getChannel()].append(corrected_value)
+
+    # prevent sync overflow
+    if last_sync + sync_interval <= datetime.now().timestamp():
+        send_sync_message()
+        buffered_data = reset_buffered_data()
+        last_sync = datetime.now().timestamp()
+
+
+def send_sync_message():
+    global data, buffered_data, channels
+    can_max_height = data['can_max_height']
+
+    avg = 0
+    for index, values in buffered_data.values():
+        if channels[index] == '2Y0A21 F08':
+            t = [v for v in values if v < 60]
+            specific_avg = sum(t) / len(t)
+        else:
+            specific_avg = sum(values) / len(values)
+        avg += specific_avg
+    avg = avg / len(buffered_data)
+
+    # get the filling rate between 0 and 1
+    filling_rate = 1 - avg / can_max_height
+    if filling_rate < 0:
+        filling_rate = 0
+    if filling_rate > 1:
+        filling_rate = 1
+
+    date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    data = {
+        'time': date_time,
+        'fillingRate': filling_rate
+    }
+    sync(data)
 
 
 def main():
-    slider_sensor = VoltageRatioInput()
-    slider_sensor.setChannel(0)
-    slider_sensor.setOnSensorChangeHandler(on_sensor_change)
-    slider_sensor.openWaitForAttachment(5000)
-    slider_sensor.setSensorType(VoltageRatioSensorType.SENSOR_TYPE_1112)
-
-    temperature_sensor = VoltageRatioInput()
-    temperature_sensor.setChannel(1)
-    temperature_sensor.setOnSensorChangeHandler(on_sensor_change)
-    temperature_sensor.openWaitForAttachment(5000)
-    temperature_sensor.setSensorType(VoltageRatioSensorType.SENSOR_TYPE_1124)
-
-    ir_reflective_sensor = VoltageRatioInput()
-    ir_reflective_sensor.setChannel(5)
-    ir_reflective_sensor.setOnSensorChangeHandler(on_sensor_change)
-    ir_reflective_sensor.openWaitForAttachment(5000)
-    ir_reflective_sensor.setSensorType(VoltageRatioSensorType.SENSOR_TYPE_1103)
-
     sharp_distance_sensor_left = VoltageRatioInput()
     sharp_distance_sensor_left.setChannel(6)
-    sharp_distance_sensor_left.setOnSensorChangeHandler(on_sensor_change)
+    sharp_distance_sensor_left.setOnSensorChangeHandler(on_sharp_change)
     sharp_distance_sensor_left.openWaitForAttachment(5000)
     sharp_distance_sensor_left.setSensorType(VoltageRatioSensorType.SENSOR_TYPE_1101_SHARP_2Y0A21)
 
     sharp_distance_sensor_right = VoltageRatioInput()
     sharp_distance_sensor_right.setChannel(7)
-    sharp_distance_sensor_right.setOnSensorChangeHandler(on_sensor_change)
+    sharp_distance_sensor_right.setOnSensorChangeHandler(on_sharp_change)
     sharp_distance_sensor_right.openWaitForAttachment(5000)
     sharp_distance_sensor_right.setSensorType(VoltageRatioSensorType.SENSOR_TYPE_1101_SHARP_2Y0A21)
 
     try:
         input("Press Enter to Stop\n")
-        print_all_information(True)
     except (Exception, KeyboardInterrupt):
         pass
 
-    slider_sensor.close()
-    temperature_sensor.close()
-    ir_reflective_sensor.close()
     sharp_distance_sensor_left.close()
     sharp_distance_sensor_right.close()
 
