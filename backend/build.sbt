@@ -9,6 +9,7 @@ val jwtVersion = "4.2.0"
 val scoptVersion = "4.0.0-RC2"
 val commonCodecVersion = "1.9"
 val flywayVersion = "7.2.1"
+val eddsaVersion = "0.3.0"
 val iamScalaVersion = sys.env.get("SCALA_VERSION").getOrElse("2.12.7")
 
 enablePlugins(JavaAppPackaging)
@@ -30,6 +31,7 @@ lazy val root = (project in file("."))
       "com.pauldijou" %% "jwt-circe" % jwtVersion,
       "commons-codec" % "commons-codec" % commonCodecVersion,
       "com.github.scopt" %% "scopt" % scoptVersion,
-      "org.flywaydb" % "flyway-core" % flywayVersion
+      "org.flywaydb" % "flyway-core" % flywayVersion,
+      "net.i2p.crypto" % "eddsa" % eddsaVersion
     )
   )

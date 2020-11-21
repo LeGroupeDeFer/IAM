@@ -1,13 +1,14 @@
 package be.unamur.infom453.iam
 
 import java.io.File
+import java.security.SignatureException
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
 import java.time.{Clock, Instant, ZoneOffset}
 import java.util.Date
 import java.util.concurrent.atomic.AtomicReference
-import collection.mutable.{Map => MutableMap}
 
+import collection.mutable.{Map => MutableMap}
 import com.twitter.{util => twitter}
 import com.twitter.finagle.context.Contexts
 import com.twitter.util.tunable.TunableMap.Key
@@ -41,6 +42,7 @@ package object lib {
   val invalidAttribute  = new Exception("At least one attribute is missing")
   val idMismatch        = new Exception("The ids do not match")
   val unknownIdentifier = new Exception("Unknown identifer")
+  val invalidSignature  = new SignatureException("purple u lookin sus!")
 
   case class TokenException(
     private val message: String,

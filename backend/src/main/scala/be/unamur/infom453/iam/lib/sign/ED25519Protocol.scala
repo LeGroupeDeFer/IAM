@@ -1,18 +1,23 @@
 package be.unamur.infom453.iam.lib.sign
 
-import java.security.spec.{PKCS8EncodedKeySpec, X509EncodedKeySpec}
-import java.security.{KeyFactory, PublicKey, Signature, SignatureException}
-
 import scala.concurrent.Future
+import java.security.Security
+import java.security.spec.X509EncodedKeySpec
+import java.security.{KeyFactory, PublicKey, Signature}
+
 import org.apache.commons.codec.binary.Base64
+import net.i2p.crypto.eddsa.EdDSASecurityProvider
+
 import be.unamur.infom453.iam.lib._
 
 
-case object RSAProtocol extends SignProtocol {
+case object ED25519Protocol extends SignProtocol {
 
-  val code = "rsa"
-  private val signature = Signature.getInstance("SHA512withRSA")
-  private val keyFactory = KeyFactory.getInstance("RSA")
+  Security.addProvider(new EdDSASecurityProvider)
+  val code = "ed25519"
+  private val signature = Signature.getInstance("EdDSA")
+  private val keyFactory = KeyFactory.getInstance("EdDSA")
+
 
   def verify(pk: String, b64cipher: String, plainText: String): Future[Boolean] = Future {
     signature.initVerify(publicKeyFromString(pk))
