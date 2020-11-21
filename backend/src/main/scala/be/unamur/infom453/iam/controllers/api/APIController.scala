@@ -1,8 +1,11 @@
 package be.unamur.infom453.iam.controllers.api
 
+import java.util.concurrent.atomic.AtomicReference
+
 import be.unamur.infom453.iam.lib._
 import be.unamur.infom453.iam.models.CanSampleTable.CanSample
 import be.unamur.infom453.iam.models.CanTable.Can
+import com.twitter.finagle.context.Contexts
 import wvlet.airframe.http.{Endpoint, HttpMethod, Router}
 
 import scala.concurrent.Future

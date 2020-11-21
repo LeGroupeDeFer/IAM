@@ -5,8 +5,12 @@ import java.sql.Timestamp
 import java.text.SimpleDateFormat
 import java.time.{Clock, Instant, ZoneOffset}
 import java.util.Date
+import java.util.concurrent.atomic.AtomicReference
+import collection.mutable.{Map => MutableMap}
 
 import com.twitter.{util => twitter}
+import com.twitter.finagle.context.Contexts
+import com.twitter.util.tunable.TunableMap.Key
 import org.mindrot.jbcrypt.BCrypt
 import slick.jdbc.MySQLProfile
 
@@ -88,6 +92,13 @@ package object lib {
     db: Database
   ): Future[C[B]] =
     db.run(query.result)
+
+  private val contextKey =
+    new Contexts.local.Key[AtomicReference[MutableMap[String, Any]]]
+
+  def context: Option[AtomicReference[MutableMap[String, Any]]] = {
+    Contexts.local.get(contextKey)
+  }
 
   /* ------------------------ Implicit conversions ------------------------ */
 
