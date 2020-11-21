@@ -5,8 +5,9 @@ project/target/
 project/project/
 target/
 build/
-resources/
+META-INF/
 backend/.bsp
+
 
 # eclipse
 build
@@ -45,3 +46,7 @@ public/master.css
 
 # runtime
 log/
+**/logback.xml
+
+# arduino
+arduino/keygen/keys
