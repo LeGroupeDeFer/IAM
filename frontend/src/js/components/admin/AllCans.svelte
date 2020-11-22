@@ -1,5 +1,5 @@
 <script>
-  import Cell from "./Cell.svelte";
+  import Can from "./Can.svelte";
   import { Table } from "sveltestrap";
   import { api } from "../../lib";
 
@@ -8,7 +8,6 @@
 
   async function deleteCan(event) {
     try {
-      console.log(event.detail.id)
       await api.admin.delete(event.detail.id);
       cans = cans.filter((can) => can.id !== event.detail.id);
     } catch (error) {
@@ -22,15 +21,18 @@
   <thead>
     <tr>
       <th>ID</th>
-      <th>Latitude</th>
       <th>Longitude</th>
+      <th>Latitude</th>
       <th>Signing Protocol</th>
       <th />
     </tr>
   </thead>
   <tbody>
     {#each cans as can}
-      <Cell {can} on:remove={(e) => deleteCan(e)} />
+      <Can
+        bind:can
+        on:remove={(e) => deleteCan(e)}
+        on:error={(e) => (errors = [...errors, e.detail.error])} />
     {/each}
   </tbody>
 </Table>

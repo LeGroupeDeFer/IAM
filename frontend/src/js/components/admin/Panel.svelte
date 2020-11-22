@@ -8,7 +8,7 @@
 
   let cans;
   let errors = [];
-  
+
   // Cannot use await then block :
   // Cannot bind to a variable declared with {#await ... then} or {:catch} blockssvelte(invalid-binding)
   onMount(async () => {

@@ -326,10 +326,10 @@ async function admin(args = "", config = {}) {
 
 
 Object.assign(admin, {
-  async update(id, lontitude, lagitude, publicKey, newId = id) {
+  async update(id, newId, longitude, latitude, publicKey, signProtocol) {
     return admin(id, {
       body: {
-        id: newId, lontitude, lagitude, publicKey
+        id: newId, longitude, latitude, publicKey, signProtocol
       },
       method: "PUT",
     });
@@ -342,7 +342,7 @@ Object.assign(admin, {
   async add(id, longitude, latitude, publicKey, signProtocol) {
     return admin("", {
       body: {
-        id, latitude, longitude, publicKey, signProtocol
+        id, longitude, latitude, publicKey, signProtocol
       },
       method: "POST",
     })
