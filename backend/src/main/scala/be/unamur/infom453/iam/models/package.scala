@@ -1,6 +1,5 @@
 package be.unamur.infom453.iam
 
-import be.unamur.infom453.iam.Configuration.store
 import slick.jdbc
 import slick.jdbc.MySQLProfile
 
@@ -14,13 +13,16 @@ package object models {
 
   import api._
 
-  implicit val db: MySQLProfile.backend.DatabaseDef =
+
+  implicit val db: MySQLProfile.backend.DatabaseDef = {
+    val conf = Configuration.instance.get
     Database.forURL(
-      store("DB_URI"),
-      store("DB_USER"),
-      store("DB_PASSWORD"),
+      conf.dbUri,
+      conf.dbUser,
+      conf.dbPassword,
       driver = "com.mysql.cj.jdbc.Driver"
     )
+  }
 
   type Users = UserTable.Users
   type User = UserTable.User

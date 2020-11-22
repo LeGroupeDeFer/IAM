@@ -2,7 +2,6 @@
   import Map from "../../components/dashboard/Map.svelte";
   import Information from "../../components/dashboard/Information.svelte";
   import CanMarker from "../../components/dashboard/CanMarker.svelte";
-  import Notification from "../../components/overall/Notification.svelte";
   import { api } from "../../lib";
   import {
     Button,
@@ -19,6 +18,8 @@
   function getCans() {
     cansRequest = api.cans.get();
   }
+
+  // TODO: Verify connexion with backend really works
 </script>
 
 <style>
@@ -39,7 +40,7 @@
 <main>
   <Map lat={50.4667} lon={4.8667} zoom={14.5}>
     {#await cansRequest}
-      <div class="center">
+      <div color="primary" class="center">
         <Spinner type="grow" />
       </div>
     {:then cans}

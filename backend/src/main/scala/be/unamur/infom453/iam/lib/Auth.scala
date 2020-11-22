@@ -1,9 +1,9 @@
 package be.unamur.infom453.iam.lib
 
 
-import be.unamur.infom453.iam.Configuration.store
 import be.unamur.infom453.iam.models.UserTable.User
 import be.unamur.infom453.iam.models._
+import be.unamur.infom453.iam.Configuration
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.util.{Future => TwitterFuture}
 import pdi.jwt.algorithms.JwtHmacAlgorithm
@@ -28,11 +28,8 @@ object Auth extends FinagleFilter {
 
   import api._
   import Ops._
-
-  val jwtRefreshLifetime: Long = store("JWT_REFRESH_LIFETIME").toLong
-  val jwtAccessLifetime: Long = store("JWT_ACCESS_LIFETIME").toLong
-  val jwtAccessKey: String = store("JWT_ACCESS_KEY")
-  val jwtAccessAlgorithm: JwtHmacAlgorithm = JwtAlgorithm.HS256
+  private val conf = Configuration.instance.get
+  val jwtAlgorithm: JwtHmacAlgorithm = JwtAlgorithm.HS256
   val bearerAuthentication: Regex = "Bearer (.+)".r
 
   /**
@@ -75,7 +72,7 @@ object Auth extends FinagleFilter {
     val refreshHash = seed
     for {
       user <- users.withUsername(username).one if user.password == password
-      _ <- tokens.withId(user.refreshTokenId).renew(refreshHash, jwtRefreshLifetime).execute
+      _ <- tokens.withId(user.refreshTokenId).renew(refreshHash, conf.authRefreshLifetime).execute
       hash <- tokens.withId(user.refreshTokenId).map(_.hash).one
     } yield hash
   } catch {
@@ -125,7 +122,7 @@ object Auth extends FinagleFilter {
       .withId(user.refreshTokenId)
       .withHash(hash)
       .ifNotExpired
-      .renew(refreshHash, jwtRefreshLifetime)
+      .renew(refreshHash, conf.authRefreshLifetime)
       .execute
   } yield
     if (modified < 1) throw invalidToken
@@ -136,8 +133,8 @@ object Auth extends FinagleFilter {
   private def issueAccessToken(subject: String): String = {
     val claim = JwtClaim(issuer = Some("IAM"), subject = Some(subject))
       .startsNow
-      .expiresIn(jwtAccessLifetime)
-    JwtCirce.encode(claim, jwtAccessKey, jwtAccessAlgorithm)
+      .expiresIn(conf.authAccessLifetime)
+    JwtCirce.encode(claim, conf.authAccessKey, jwtAlgorithm)
   }
 
   /* --------------------------- Finagle Filter ---------------------------- */
@@ -163,7 +160,7 @@ object Auth extends FinagleFilter {
 
   private def authenticate(token: String): Try[JwtClaim] = Try {
     JwtCirce
-      .decode(token, jwtAccessKey, Seq(jwtAccessAlgorithm))
+      .decode(token, conf.authAccessKey, Seq(jwtAlgorithm))
       .getOrElse {
         throw expiredToken
       }

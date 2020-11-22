@@ -6,6 +6,7 @@ SCALA_MAJOR_VERSION=$(echo $SCALA_VERSION | sed -E "s/([0-9]+)\.([0-9]+)\.([0-9]
 SBT_JAR_DIR="/usr/src/app/backend/target/scala-${SCALA_MAJOR_VERSION}/"
 ASSETS_DIR="${SBT_JAR_DIR}/assets"
 
+
 rm -f /tmp/backend.pid
 rm -f /tmp/frontend.pid
 cd /usr/src/app/
@@ -34,7 +35,7 @@ migrate() {
    -url="jdbc:${DB_DRIVER}://${DB_HOST}:${DB_PORT}/${DB_DATABASE}"\
    -user=${DB_USER} \
    -password=${DB_PASSWORD} \
-   -locations="filesystem:/usr/src/app/backend/migrations" > ../migrations.log 2>&1
+   -locations="filesystem:/usr/src/app/backend/src/main/resources/db/migration" > ../migrations.log 2>&1
   
   cd ..
 }

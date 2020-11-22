@@ -1,11 +1,13 @@
 package be.unamur.infom453.iam.controllers.api
 
+
 import be.unamur.infom453.iam.lib._
 import be.unamur.infom453.iam.models.CanSampleTable.CanSample
 import be.unamur.infom453.iam.models.CanTable.Can
 import wvlet.airframe.http.{Endpoint, HttpMethod, Router}
 
 import scala.concurrent.Future
+import scala.util.{Success, Failure, Try}
 
 object APIController extends Guide {
 
@@ -37,17 +39,21 @@ object APIController extends Guide {
 
   object CanResponse {
 
-    def from(can: Can, canSample: Seq[CanSample]): CanResponse =
+    def from(can: Can, canSample: Seq[CanSample]): CanResponse = {
+      val currentFill: Double = Try(canSample.maxBy(_.moment).fillingRate) match {
+          case Success(value) => value
+          case Failure(value) => 0.0
+        }
       CanResponse(
         can.identifier,
         can.longitude,
         can.latitude,
         can.publicKey,
         can.signProtocol.code,
-        canSample.maxBy(_.moment).fillingRate,
+        currentFill,
         canSample.map(CanSampleResponse.from)
       )
-
+    }
   }
 
   type CanSampleRequest = CanSampleResponse

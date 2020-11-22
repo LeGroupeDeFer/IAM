@@ -5,33 +5,81 @@
     Card,
     CardBody,
     CardHeader,
-    CardFooter,
     CardText,
     CardTitle,
-    Button,
     Progress,
+    Alert,
+    Spinner,
+    Button,
   } from "sveltestrap";
+  import { api } from "../../lib";
 
   export let can;
 
-  let color = getColor(can.currentFill);
-  let showStatistics = false;
+  let data;
 
   const dispatch = createEventDispatcher();
-
-  function getColor(currentFill) {
-    // FIXME : Get color from CSS variables
-    return ["primary", "secondary", "warning", "danger"][
-      Math.round(currentFill / 25.0)
-    ];
-  }
 
   function close() {
     dispatch("close", {});
   }
 
-  $: can, (color = getColor(can.currentFill)), (showStatistics = false);
-  // TODO : connect to backend
+  async function retrieveFillingRates(id) {
+    return await api.can(id);
+  }
+
+  function getLastDump(data) {
+    // FIXME: modify backend and openapi
+    data.forEach((info) => (info.time = parseInt(info.time)));
+    if (data.length < 1) return {};
+    const lastDump = data
+      .sort((a, b) => a.time - b.time)
+      .reduce((acc, info) => {
+        if (info.fillingRate < acc.lastFillingRate) {
+          return {
+            time: info.time,
+            fillingRate: info.fillingRate,
+            lastFillingRate: info.fillingRate,
+          };
+        } else {
+          return { ...acc, lastFillingRate: info.fillingRate };
+        }
+      });
+    return { time: lastDump.time, fillingRate: lastDump.fillingRate };
+  }
+
+  function getNumberOfRequest(data) {
+    //TODO: implement
+    return 78;
+  }
+
+  function getProgressColor(currentFill) {
+    // FIXME: Get color from CSS variables
+    return ["primary", "info", "warning", "danger"][
+      Math.round(currentFill / 25.0)
+    ];
+  }
+
+  function getDumpingColor(data) {
+    const nbDays =
+      (Date.now() - getLastDump(data).time) / (60 * 60 * 24 * 1000);
+    if (nbDays > 5) return "danger";
+    else if (nbDays > 2) return "warning";
+    else return "info";
+  }
+
+  function getRequestColor(nbRequests) {
+    // Cans are supposed to send their filling rate every 30 minutes
+    // For the last two days, we're supposed to have 96 differents requests
+    if (nbRequests >= 90) return "info";
+    else if (nbRequests >= 60) return "warning";
+    else return "danger";
+  }
+
+  // TODO: verify if connexion with backend really works
+  // TODO: Refactor this wonderful piece of code 
+
+  $: can, (data = retrieveFillingRates(can.id));
 </script>
 
 <style>
@@ -79,23 +127,38 @@
     </CardHeader>
     <CardBody>
       <CardText>
-        TODO : check last time a filling rate was given so we can tell if there
-        is a problem
+        {#await data}
+          <Spinner type="grow" />
+        {:then can}
+          <Alert color={getDumpingColor(can.data)}>
+            <h6>Last dumping :</h6>
+            {new Date(getLastDump(can.data).time).toLocaleString()}
+          </Alert>
+          <hr />
+          <Alert color={getRequestColor(getNumberOfRequest(can.data))}>
+            <h6>Connexion state :</h6>
+            {getNumberOfRequest(can.data)}/96 requests received over the last 2
+            days
+          </Alert>
+        {:catch _}
+          <h6>Something went wrong...</h6>
+          <Button
+            color="warning"
+            on:click={() => (data = retrieveFillingRates(can.id))}>
+            Try again
+          </Button>
+        {/await}
         <hr />
-        TODO : indicate the last time it was emptied
-        <hr />
-        <Button outline on:click={() => (showStatistics = !showStatistics)}>
-          Statistics
-        </Button>
+        <Alert color={getProgressColor(can.currentFill)}>
+          <h6>Current filling :</h6>
+          <Progress
+            animated
+            value={can.currentFill}
+            color={getProgressColor(can.currentFill)}>
+            {can.currentFill}%
+          </Progress>
+        </Alert>
       </CardText>
     </CardBody>
-    <CardFooter>
-      <Progress animated bar value={can.currentFill} {color}>
-        {can.currentFill}
-      </Progress>
-    </CardFooter>
   </Card>
-  {#if showStatistics}
-    <Card body>TODO : showStatistics</Card>
-  {/if}
 </div>

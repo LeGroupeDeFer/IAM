@@ -6,6 +6,10 @@ val scalatestVersion = "3.0.5"
 val mysqlConnectorVersion = "8.0.19"
 val bcryptVersion = "0.4"
 val jwtVersion = "4.2.0"
+val scoptVersion = "4.0.0-RC2"
+val commonCodecVersion = "1.9"
+val flywayVersion = "7.2.1"
+val eddsaVersion = "0.3.0"
 val iamScalaVersion = sys.env.get("SCALA_VERSION").getOrElse("2.12.7")
 
 enablePlugins(JavaAppPackaging)
@@ -17,7 +21,7 @@ lazy val root = (project in file("."))
     version := "0.1.0-SNAPSHOT",
     scalaVersion := iamScalaVersion,
     libraryDependencies ++= Seq(
-      "org.wvlet.airframe" %% "airframe-http-finagle" % (airFrameHttpVersion),
+      "org.wvlet.airframe" %% "airframe-http-finagle" % airFrameHttpVersion,
       "org.scalatest" %% "scalatest" % scalatestVersion % "test",
       "com.typesafe.slick" %% "slick" % slickVersion,
       "org.slf4j" % "slf4j-nop" % slf4jVersion,
@@ -25,6 +29,9 @@ lazy val root = (project in file("."))
       "mysql" % "mysql-connector-java" % mysqlConnectorVersion,
       "org.mindrot" % "jbcrypt" % bcryptVersion,
       "com.pauldijou" %% "jwt-circe" % jwtVersion,
-      "commons-codec" % "commons-codec" % "1.9"
+      "commons-codec" % "commons-codec" % commonCodecVersion,
+      "com.github.scopt" %% "scopt" % scoptVersion,
+      "org.flywaydb" % "flyway-core" % flywayVersion,
+      "net.i2p.crypto" % "eddsa" % eddsaVersion
     )
   )
