@@ -19,16 +19,22 @@
   let longitude = "";
   let latitude = "";
   let publicKey = "";
+  let signProtocol = "rsa";
   let fieldsCompleted = false;
 
   $: fieldsCompleted =
-    id.length && longitude.length && latitude.length && publicKey.length;
+    id.length &&
+    longitude.length &&
+    latitude.length &&
+    publicKey.length &&
+    signProtocol.length;
 
   function clear() {
     id = "";
     longitude = "";
     latitude = "";
     publicKey = "";
+    signProtocol = "rsa";
   }
 </script>
 
@@ -58,6 +64,11 @@
         type="text"
         placeholder="Enter the public key"
         bind:value={publicKey} />
+      <span class="separation" />
+      <Input
+        type="text"
+        placeholder="Enter the signing protocol"
+        bind:value={signProtocol} />
     </FormGroup>
   </ModalBody>
   <ModalFooter>
@@ -65,7 +76,7 @@
       color="primary"
       disabled={!fieldsCompleted}
       on:click={() => {
-        dispatch('addToggled', { id, latitude, longitude, publicKey });
+        dispatch('addToggled', { id, latitude, longitude, publicKey, signProtocol });
         toggle();
         clear();
       }}>

@@ -18,8 +18,6 @@
   function getCans() {
     cansRequest = api.cans.get();
   }
-
-  // TODO: Verify connexion with backend really works
 </script>
 
 <style>
@@ -52,7 +50,7 @@
           bind:can={selectedCan}
           on:close={() => (selectedCan = undefined)} />
       {/if}
-    {:catch error}
+    {:catch _}
       <div class="center">
         <Card>
           <CardHeader>Something went wrong</CardHeader>
