@@ -71,6 +71,9 @@ package object lib {
     date.toInstant
   }
 
+  def stringFromInstant(i: Instant): String =
+    (new SimpleDateFormat("yyyy-MM-ddhh:mm:ss")).format(i)
+
   def timestampAfter(seconds: Long): Timestamp =
     Timestamp.from(after(seconds))
 
