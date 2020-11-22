@@ -39,7 +39,7 @@ object APIController extends Guide {
 
   object CanResponse {
 
-    def from(can: Can, canSample: Seq[CanSample]): CanResponse = {
+    def from(can: Can, canSample: Option[Seq[CanSample]]): CanResponse = {
       val currentFill: Double = Try(canSample.maxBy(_.moment).fillingRate) match {
           case Success(value) => value
           case Failure(value) => 0.0
@@ -84,13 +84,13 @@ trait APIController {
 
   @Endpoint(method = HttpMethod.GET, path = "/cans")
   def getAllCans: Future[Seq[CanResponse]] = Can
-    .allSampled
-    .map(_.map(row => CanResponse.from(row._1, row._2)))
+    .all
+    .map(_.map(row => CanResponse.from(row, None)))
 
   @Endpoint(method = HttpMethod.GET, path = "/can/:identifier")
   def getOneCan(identifier: String): Future[CanResponse] = Can
     .byIdentifierSampled(identifier)
-    .map(result => CanResponse.from(result._1, result._2))
+    .map(result => CanResponse.from(result._1, Some(result._2)))
     .recoverWith(ErrorResponse.recover[CanResponse](404))
 
   @Endpoint(method = HttpMethod.POST, path = "/can/:identifier/sync")
