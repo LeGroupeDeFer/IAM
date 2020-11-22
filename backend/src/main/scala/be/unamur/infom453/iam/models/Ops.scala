@@ -4,6 +4,7 @@ import java.time.Clock
 
 import be.unamur.infom453.iam.lib.{after, now, timestampAfter, timestampNow}
 import be.unamur.infom453.iam.models.TokenTable.Token
+import slick.dbio.NoStream
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random

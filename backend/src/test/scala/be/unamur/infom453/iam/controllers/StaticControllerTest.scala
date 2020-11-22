@@ -1,29 +1,27 @@
-package be.unamur.infom453.iam
+package be.unamur.infom453.iam.controllers
 
-import org.scalatest.FunSuite
-import wvlet.airframe.http.{Http, HttpMessage}
+import be.unamur.infom453.iam._
+import org.scalatest._
+import org.scalatest.flatspec._
+import wvlet.airframe.http.Http
 
 
-class MainTest extends FunSuite {
+class StaticControllerTest extends AnyFlatSpec {
 
-  val client = Http.client.newSyncClient("http://localhost:8000")
   import client._
 
-  def isOk(response: HttpMessage.Response): Boolean =
-    200 <= response.statusCode && response.statusCode <= 400
-
-  test("healthcheck") {
+  "The index" should "respond" taggedAs HttpTest in {
     val response = sendSafe(Http.request("/"))
     assert(isOk(response))
   }
 
-  test("indexSendsClient") {
+  "The index" should "send the client" taggedAs HttpTest in {
     val response = sendSafe(Http.request("/"))
     assert(response.header.get("Content-Type").contains("text/html"))
     assert(!response.message.toContentString.isEmpty)
   }
 
-  test("staticEndpointsSendClient") {
+  "The static pages" should "send the client" taggedAs HttpTest in {
     val admin = sendSafe(Http.request("/admin"))
     val auth = sendSafe(Http.request("/auth"))
     val responses = Seq(admin, auth)
