@@ -40,9 +40,9 @@ object APIController extends Guide {
   object CanResponse {
 
     def from(can: Can, canSample: Option[Seq[CanSample]]): CanResponse = {
-      val currentFill: Double = Try(canSample.maxBy(_.moment).fillingRate) match {
-          case Success(value) => value
-          case Failure(value) => 0.0
+      val currentFill: Double = Try(canSample.map(_.maxBy(_.moment).fillingRate)) match {
+          case Success(Some(value)) => value
+          case _ => 0.0
         }
       CanResponse(
         can.identifier,
@@ -51,7 +51,7 @@ object APIController extends Guide {
         can.publicKey,
         can.signProtocol.code,
         currentFill,
-        canSample.map(CanSampleResponse.from)
+        canSample.map(_.map(CanSampleResponse.from)).getOrElse(Seq())
       )
     }
   }
