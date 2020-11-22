@@ -1,0 +1,106 @@
+
+# @name register
+POST http://localhost:8000/api/auth/register
+Accept: application/json
+Cache-Control: no-cache
+
+{ "username": "john", "password": "secret" }
+### ------------------------------------------------------------ ADMIN FAILURE
+
+# @name loginSuccess
+POST http://localhost:8000/api/auth/login
+Accept: application/json
+Cache-Control: no-cache
+
+{ "username": "john", "password": "secret" }
+
+### ------------------------------------------------------------ ADMIN FAILURE
+
+@refreshToken = {{loginSuccess.response.body.$.token}}
+
+# @name refreshSuccess
+POST http://localhost:8000/api/auth/refresh
+Accept: application/json
+Cache-Control: no-cache
+
+{ "username": "john", "token": "{{refreshToken}}" }
+
+### ------------------------------------------------------------ ADMIN FAILURE
+
+@consecutiveRefreshToken = {{refreshSuccess.response.body.$.refresh}}
+
+# @name consecutiveRefreshSuccess
+POST http://localhost:8000/api/auth/refresh
+Accept: application/json
+Cache-Control: no-cache
+
+{ "username": "john", "token": "{{consecutiveRefreshToken}}" }
+
+### ------------------------------------------------------------ ADMIN FAILURE
+
+@accessToken = {{consecutiveRefreshSuccess.response.body.$.access}}
+
+# @name adminSuccess
+GET http://localhost:8000/api/admin/noodles
+Accept: text/plain
+Cache-Control: no-cache
+Authorization: Bearer {{accessToken}}
+
+### ------------------------------------------------------------ ADMIN FAILURE
+
+POST http://localhost:8000/api/admin/can/
+Content-Type: application/json
+Cache-Control: no-cache
+Authorization: Bearer {{accessToken}}
+
+{
+  "id": "e-kot",
+  "latitude": 50.462794, 
+  "longitude": 4.857306,
+  "publicKey": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCYRSKRffqYuTeEnFrtdaOh9CIzkdSIj+NMmmTr91BcZtR7L9F6kw6MagwYpgA6BcnAfMOiiX98xI5mBV/FRISnLRlFORqktM0HAmqfabIrAXjyct975HVuYsGWXLXiBjBY9khvNKMy5XvEp/rvPMMq0x47uPICNZKWfRxnfh3PLP3oWG+H/3LJCNh8K/qm2IR59pHnoNZQusRrdFoSJj/OU2SKQXdPJYCm5jjGDwI5CzbzTkWiOz0DF5YlsknxcBL4s8mNNu1AEXH1o3BJWXtJGmBI2Na7kyYpMjZDbCpK9QNPbqT/jExvIYXoDbpYHtkjLel5DWG6i3PxqPVPxPHP taz@taztower",
+  "signProtocol": "rsa"
+}
+### ------------------------------------------------------------ ADMIN FAILURE
+
+POST http://localhost:8000/api/admin/can/
+Content-Type: application/json
+Cache-Control: no-cache
+Authorization: Bearer {{accessToken}}
+
+{
+  "id": "fac-info",
+  "latitude": 50.466016,
+  "longitude": 4.857658,
+  "publicKey": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCYRSKRffqYuTeEnFrtdaOh9CIzkdSIj+NMmmTr91BcZtR7L9F6kw6MagwYpgA6BcnAfMOiiX98xI5mBV/FRISnLRlFORqktM0HAmqfabIrAXjyct975HVuYsGWXLXiBjBY9khvNKMy5XvEp/rvPMMq0x47uPICNZKWfRxnfh3PLP3oWG+H/3LJCNh8K/qm2IR59pHnoNZQusRrdFoSJj/OU2SKQXdPJYCm5jjGDwI5CzbzTkWiOz0DF5YlsknxcBL4s8mNNu1AEXH1o3BJWXtJGmBI2Na7kyYpMjZDbCpK9QNPbqT/jExvIYXoDbpYHtkjLel5DWG6i3PxqPVPxPHP taz@taztower",
+  "signProtocol": "rsa"
+}
+
+### ---------------------------------------------------------------- SYNC CAN
+
+POST http://localhost:8000/api/can/whalla/sync
+Content-Type: application/json
+Cache-Control: no-cache
+Authorization: Bearer {{accessToken}}
+
+{
+  "signature": "fac-info",
+  "data": {
+    "time": "2020-11-04 08:47:25",
+    "fillingRate": 42.69
+  }
+}
+
+### ---------------------------------------------------------------- SYNC CAN
+
+POST http://localhost:8000/api/can/whalla/sync
+Content-Type: application/json
+Cache-Control: no-cache
+Authorization: Bearer {{accessToken}}
+
+{
+  "signature": "e-kot",
+  "data": {
+    "time": "2020-11-04 08:47:25",
+    "fillingRate": 15.12
+  }
+}

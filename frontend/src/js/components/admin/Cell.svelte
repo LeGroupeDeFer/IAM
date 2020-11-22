@@ -22,6 +22,9 @@
     <TextInput text={can.longitude} />
   </td>
   <td>
+    <TextInput text={can.signProtocol} />
+  </td>
+  <td>
     <Button outline color="danger" size="sm" on:click={remove}>Delete</Button>
   </td>
 </tr>
