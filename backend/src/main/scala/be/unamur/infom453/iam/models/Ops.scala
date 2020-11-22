@@ -110,7 +110,7 @@ object Ops {
     def update(can: Can): DBIOAction[Int, NoStream, Effect.Write] =
       q.map(c => (c.latitude, c.longitude, c.publicKey)).update((can.latitude, can.longitude, can.publicKey))
 
-    def delete: DBIOAction[Int, NoStream, Effect.Write] =
+    def remove: DBIOAction[Int, NoStream, Effect.Write] =
       q.map(c => c.deletedAt).update(Some(timestampNow()))
 
   }

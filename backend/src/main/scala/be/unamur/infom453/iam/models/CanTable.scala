@@ -42,7 +42,7 @@ object CanTable {
 
     def delete(identifier: String): Future[Unit] = cans
       .withIdentifier(identifier)
-      .delete
+      .remove
       .execute
       .map(modified => if (modified != 1) throw updateError else ())
 

@@ -29,7 +29,7 @@ class APIControllerTest extends AnyFlatSpec
     Configuration.parse(List())
     Await.result(Future.sequence(Seq(
       Auth.register("obi-wan", "secret"),
-      cans.delete.execute.flatMap(_ => Future.sequence(Seq(
+      cans.remove.execute.flatMap(_ => Future.sequence(Seq(
         Can(None, "a", 25.17, 36.49, "a", NoneProtocol).insert,
         Can(None, "b", 25.17, 36.49, "b", NoneProtocol).insert,
         Can(None, "c", 25.17, 36.49, "c", NoneProtocol).insert,
@@ -54,10 +54,7 @@ class APIControllerTest extends AnyFlatSpec
   override def afterAll: Unit = {
     Await.ready(Future.sequence(Seq(
       users.withUsername("obi-wan").delete.execute,
-      cans.withIdentifier("a").delete.execute,
-      cans.withIdentifier("b").delete.execute,
-      cans.withIdentifier("c").delete.execute,
-      cans.withIdentifier("d").delete.execute,
+      cans.delete.execute,
     )), Duration.Inf)
   }
 
