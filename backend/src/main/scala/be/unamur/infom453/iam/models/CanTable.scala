@@ -54,6 +54,7 @@ object CanTable {
      *         samples
      */
     def allSampled: Future[Seq[(Can, Seq[CanSample])]] = cans
+      .active
       .withData
       .execute
       .map(row => {

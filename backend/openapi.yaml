@@ -52,7 +52,7 @@ paths:
                 type: array
                 uniqueItems: false
                 items:
-                  $ref: '#/components/schemas/TrashCan'
+                  $ref: '#/components/schemas/TrashCanInfo'
               examples:
                 Example 1:
                   value:
@@ -60,7 +60,8 @@ paths:
                       longitude: 0
                       latitude: 0
                       publicKey: string
-                      currentFill: string
+                      signProtocol: "rsa"
+                      currentFill: 69.42
             application/xml:
               schema:
                 type: array
@@ -73,7 +74,8 @@ paths:
                       longitude: 25.26
                       latitude: 12.58
                       publicKey: (...)
-                      currentFill: 54 # percentage
+                      signProtocol: "rsa"
+                      currentFill: 54
       operationId: get-admin-cans
       description: Get all trash can information
     parameters: []
@@ -102,6 +104,7 @@ paths:
                     longitude: 0
                     latitude: 0
                     publicKey: string
+                    signProtocol: "rsa"
                     data:
                       - time: string
                         fillingRate: 0
@@ -139,6 +142,7 @@ paths:
                   longitude: 0
                   latitude: 0
                   publicKey: string
+                  signProtocol: "rsa"
       tags:
         - admin
         - can
@@ -209,6 +213,7 @@ paths:
                   longitude: 0
                   latitude: 0
                   publicKey: string
+                  signProtocol: "rsa"
       tags:
         - admin
         - can
@@ -422,6 +427,25 @@ components:
       required:
         - signature
         - data
+    TrashCanInfo:
+      title: TrashCanInfo
+      type: object
+      properties:
+        id:
+          type: string
+        longitude:
+          type: number
+        latitude:
+          type: number
+        publicKey:
+          type: string
+        signProtocol:
+          type: string
+        currentFill:
+          type: number
+      required:
+        - id
+        - signProtocol
   securitySchemes:
     bearerAuth:
       type: http

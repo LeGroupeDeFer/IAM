@@ -91,6 +91,10 @@ def sync(data: dict) -> None:
     :param data: the data to be sent as json
     :return: None
     """
+    if is_debug():
+        print("sending data to server")
+        print(f'{data}')
+    
     data_as_json = purify(json.dumps(data))
 
     signature = sign(data_as_json).decode("utf-8")
