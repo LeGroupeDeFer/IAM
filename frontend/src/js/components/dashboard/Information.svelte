@@ -2,12 +2,14 @@
   import { createEventDispatcher } from "svelte";
 
   import { Card, CardBody, CardHeader, CardText, CardTitle } from "sveltestrap";
-  // import { api } from "../../lib";
+  import { api } from "../../lib";
   import FillingInfo from "./FillingInfo.svelte";
   import RequestsInfo from "./RequestsInfo.svelte";
   import DumpingInfo from "./DumpingInfo.svelte";
 
   export let can;
+
+  let data;
 
   const dispatch = createEventDispatcher();
 
@@ -15,12 +17,11 @@
     dispatch("close", {});
   }
 
-  // FIXME: After reu 22/11
-  // async function retrieveFillingRates(id) {
-  //   return await api.can(id);
-  // }
-  // let data;
-  // $: can, (data = retrieveFillingRates(can.id));
+  async function retrieveFillingRates(id) {
+    return await api.can(id);
+  }
+
+  $: can, (data = retrieveFillingRates(can.id));
 </script>
 
 <style>
@@ -68,11 +69,13 @@
     </CardHeader>
     <CardBody>
       <CardText>
-        <DumpingInfo {can} />
-        <hr />
-        <RequestsInfo {can} />
-        <hr />
-        <FillingInfo {can} />
+        {#await data then can}
+          <DumpingInfo {can} />
+          <hr />
+          <RequestsInfo {can} />
+          <hr />
+          <FillingInfo {can} />
+        {/await}
       </CardText>
     </CardBody>
   </Card>
