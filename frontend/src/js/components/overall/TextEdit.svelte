@@ -1,8 +1,11 @@
 <script>
+  import { createEventDispatcher } from "svelte";
   import { Input } from "sveltestrap";
 
   export let text = "";
+
   let toggled = false;
+  let dispatch = createEventDispatcher();
 </script>
 
 <style>
@@ -21,6 +24,9 @@
       type="text"
       placeholder="Enter the new name for the can"
       bind:value={text}
-      on:blur={() => (toggled = false)} />
+      on:blur={() => {
+        toggled = false;
+        dispatch('blur');
+      }} />
   </div>
 {/if}
