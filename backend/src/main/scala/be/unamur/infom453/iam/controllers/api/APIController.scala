@@ -31,7 +31,7 @@ object APIController extends Guide {
   ) extends APIResponse {
 
     override def toString: String =
-      s"""{"time": "${time}", "fillingRate": ${fillingRate}}"""
+      s"""{"time":"${time}","fillingRate":${fillingRate}}"""
 
   }
 
