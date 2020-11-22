@@ -4,6 +4,7 @@ import java.time.Clock
 
 import be.unamur.infom453.iam.lib.{after, now, timestampAfter, timestampNow}
 import be.unamur.infom453.iam.models.TokenTable.Token
+import slick.dbio.NoStream
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
@@ -109,7 +110,7 @@ object Ops {
     def update(can: Can): DBIOAction[Int, NoStream, Effect.Write] =
       q.map(c => (c.latitude, c.longitude, c.publicKey)).update((can.latitude, can.longitude, can.publicKey))
 
-    def delete: DBIOAction[Int, NoStream, Effect.Write] =
+    def remove: DBIOAction[Int, NoStream, Effect.Write] =
       q.map(c => c.deletedAt).update(Some(timestampNow()))
 
   }

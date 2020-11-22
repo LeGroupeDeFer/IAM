@@ -13,11 +13,10 @@ import be.unamur.infom453.iam.lib._
 
 case object ED25519Protocol extends SignProtocol {
 
-  Security.addProvider(new EdDSASecurityProvider)
+  Security.addProvider(new EdDSASecurityProvider())
   val code = "ed25519"
-  private val signature = Signature.getInstance("EdDSA")
-  private val keyFactory = KeyFactory.getInstance("EdDSA")
-
+  private val signature = Signature.getInstance("NONEwithEdDSA", "EdDSA");
+  private val keyFactory = KeyFactory.getInstance("EdDSA", "EdDSA")
 
   def verify(pk: String, b64cipher: String, plainText: String): Future[Boolean] = Future {
     signature.initVerify(publicKeyFromString(pk))
