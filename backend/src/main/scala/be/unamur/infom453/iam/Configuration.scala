@@ -79,7 +79,7 @@ object Configuration {
           .text("The port on which the server shall listen for incoming requests")
       ) ++ dbOpts ++ authOpts: _*),
     cmd("migrate")
-      .action((_, c) => c.copy(mode="migration"))
+      .action((_, c) => c.copy(mode="migrate"))
       .text("Update the database schema to the latest version")
       .children(dbOpts: _*)
   )
