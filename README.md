@@ -37,7 +37,7 @@ pip install -r requirements.txt
 
 ##### Callibration
 
-Sensors do not provide accurate results out of the box. If `f` details the function that outputs the accurate results and `g` represents the sensor raw data, the `c` is the callibration function such that `c ∘ g = f`. This callibration function is (roughly) defined as follow:
+Sensors do not provide accurate results out of the box. If `f` details the function that outputs the accurate results and `g` represents the sensor raw data, `c` is the callibration function such that `c ∘ g = f`. This callibration function is (roughly) defined as follow:
 
 1. Get the sensor raw data (an example of this is available in the `raspberry/data/raw_calibration_measurement.csv` file);
 2. Find the function that best fit the sensor data (find `g`);
