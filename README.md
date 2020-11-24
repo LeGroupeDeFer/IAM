@@ -36,7 +36,40 @@ pip install -r requirements.txt
 ```
 
 ##### Callibration
-TODO
+
+Each and every sensor, even the most precise ones, have to be callibrated.
+They cannot provide accurate result out of the box.
+
+So one must take measurement of the output of the sensor depending on the real value that is measured.
+
+You can find an exemple of this kind of measurement in the file `raspberry/data/raw_calibration_measurement.csv`.
+
+Generally the sensors do respect some kind of proportionality between the real and measured unit (distance in this case).
+So we just have to find the best fitting line in all the points that comes from the measurement.
+
+You can find a python script that does that in the file `raspberry/calibration.py`.
+
+Additionnaly, this script produce a graph of the measured data and the best fitting line and put the parameters in a file `parameters.json`.
+
+![graph](raspberry/data/calibration_measurement.png)
+
+Once the parameters of the line has been extracted (slope and y position at origin), you can use it to correct the sensor values.
+
+So if 
+
+```
+f(x) = m * x + c
+```
+
+and we have `y`, `m` and `c`, we need to isolate `x`
+
+```
+x = (y - c)/m
+```
+
+In python this could be written as
+
+
 
 
 #### Arduino
