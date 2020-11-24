@@ -1,19 +1,50 @@
 # IAM
-Laboratoire en Informatique Ambiante et Mobile
+A tool designed to help public waste management services monitor and empty public trash cans.
 
-## Agent development
+This project is project is being developed for the INFOM453 class (Laboratoire en **I**nformatique **A**mbiante et **M**obile) at [UNamur](https://www.unamur.be/en) (BE).
 
-### Raspberry
+## Getting started
+
+### Agent development
+
+**IAM** uses the concept of agent to monitor trash cans. An agent is a device whose purpose is to monitor a single trash can state and to notify the server when changes occur. Insofar as this implementation goes, you may either go for the Raspberry route or the Arduino route. Both paths are now detailed.
+
+#### Raspberry
+##### Installation
+
+Prerequisites:
+1. Get a [Raspberry Pi](https://www.raspberrypi.org/), any version should be sufficent;
+2. Get a **2Y0A21 F42** distance sensor;
+3. Get a **2Y0A21 F08** distance sensor.
+
+When the prerequisites are satisfied, proceed to the [phidget python library](https://www.phidgets.com/docs/Language_-_Python) installation on the raspberry:
+```bash
+mkdir -p libphidget22
+wget -q https://www.phidgets.com/downloads/phidget22/libraries/linux/libphidget22.tar.gz -O - | gunzip -c - | tar xf - -C "${PWD}/libphidget22" --strip-components 1
+cd libphidget22
+./configure && make
+sudo make install
+sudo ldconfig
+sudo cp "${PWD}/libphidget22/plat/linux/udev/99-libphidget22.rules" /etc/udev/rules.d/
+```
+
+After which you may have to reboot the raspberry. Once this is done you may proceed to the python dependencies installation:
+
+```bash
+cd raspberry
+pip install -r requirements.txt
+```
+
+##### Callibration
 TODO
 
-### Arduino
+
+#### Arduino
 TODO
 
-## Web development
+#### Web development
 
-### Getting started
-
-#### With Docker:
+##### With Docker:
 
 Prerequisites:
 1. Have [docker](https://docs.docker.com/engine/install/) installed;
@@ -28,34 +59,35 @@ docker-compose up -d
 You're done! Drink a cup of coffee while backend and frontend sources are compiled and then head to [localhost:8000](http://localhost:8000)!
 The migrations, backend and frontend logs can be respectively found in `migrations.log`, `backend.log` and `frontend.log`.
 
-#### Without Docker:
+##### Without Docker:
 
 Prerequisites:
 1. Have a [Java Runtime Environment](https://www.java.com/en/download/) version 8 or superior;
 2. Have [SBT](https://www.scala-sbt.org/download.html) installed;
-3. Have [Flyway Community Edition](https://flywaydb.org/download/) installed;
-4. Have [NodeJS](https://nodejs.org/en/download/) and NPM installed;
-5. Have a [MySQL](https://www.mysql.com/downloads/) or [MariaDB](https://mariadb.org/download/) server available.
+3. Have [NodeJS](https://nodejs.org/en/download/) and NPM installed;
+4. Have a [MySQL](https://www.mysql.com/downloads/) or [MariaDB](https://mariadb.org/download/) server available.
 
-##### Running migrations
+###### Running migrations
 When the prerequisites are satisfied, you may run the migrations with the following command:
 ```bash
-flyway migrate \
-    -url="jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_DATABASE}"\
-    -user=${DB_USER} \
-    -password=${DB_PASSWORD} \
-    -locations="filesystem:${PROJECT_ROOT}/backend/migrations"
+sbt "run migrate \
+    --database-host $DB_HOST \
+    --database-port $DB_PORT \
+    --database-schema $DB_SCHEMA \
+    --database-user $DB_USER \
+    --database-password $DB_PASSWORD
+"
 ```
 Where variables are replaced with the chosen installation details.
 
-##### Running the development server
+###### Running the development server
 ```bash
 cd ${PROJECT_ROOT}/backend
 sbt run
 ```
 If everything was setup properly, you should now be able to reach the website at [localhost:8000](http://localhost:8000)
 
-##### Compiling frontend assets
+###### Compiling frontend assets
 Executing the following
 ```bash
 cd ${PROJECT_ROOT}/frontend
