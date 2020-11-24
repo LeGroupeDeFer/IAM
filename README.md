@@ -31,7 +31,7 @@ sudo cp "${PWD}/libphidget22/plat/linux/udev/99-libphidget22.rules" /etc/udev/ru
 After which you may have to reboot the raspberry. Once this is done you may proceed to the python dependencies installation:
 
 ```bash
-cd raspberry
+cd ${PROJECT_ROOT}/raspberry
 pip install -r requirements.txt
 ```
 
@@ -70,6 +70,7 @@ Prerequisites:
 ###### Running migrations
 When the prerequisites are satisfied, you may run the migrations with the following command:
 ```bash
+cd ${PROJECT_ROOT}/backend
 sbt "run migrate \
     --database-host $DB_HOST \
     --database-port $DB_PORT \
