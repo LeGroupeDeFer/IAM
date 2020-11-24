@@ -75,9 +75,9 @@ In python this could be written as
 #### Arduino
 TODO
 
-#### Web development
+### Web development
 
-##### With Docker:
+#### With Docker:
 
 Prerequisites:
 1. Have [docker](https://docs.docker.com/engine/install/) installed;
@@ -92,7 +92,7 @@ docker-compose up -d
 You're done! Drink a cup of coffee while backend and frontend sources are compiled and then head to [localhost:8000](http://localhost:8000)!
 The migrations, backend and frontend logs can be respectively found in `migrations.log`, `backend.log` and `frontend.log`.
 
-##### Without Docker:
+#### Without Docker:
 
 Prerequisites:
 1. Have a [Java Runtime Environment](https://www.java.com/en/download/) version 8 or superior;
@@ -100,7 +100,7 @@ Prerequisites:
 3. Have [NodeJS](https://nodejs.org/en/download/) and NPM installed;
 4. Have a [MySQL](https://www.mysql.com/downloads/) or [MariaDB](https://mariadb.org/download/) server available.
 
-###### Running migrations
+##### Running migrations
 When the prerequisites are satisfied, you may run the migrations with the following command:
 ```bash
 cd ${PROJECT_ROOT}/backend
@@ -114,14 +114,14 @@ sbt "run migrate \
 ```
 Where variables are replaced with the chosen installation details.
 
-###### Running the development server
+##### Running the development server
 ```bash
 cd ${PROJECT_ROOT}/backend
 sbt run
 ```
 If everything was setup properly, you should now be able to reach the website at [localhost:8000](http://localhost:8000)
 
-###### Compiling frontend assets
+##### Compiling frontend assets
 Executing the following
 ```bash
 cd ${PROJECT_ROOT}/frontend
