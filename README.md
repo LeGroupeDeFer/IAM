@@ -40,7 +40,7 @@ pip install -r requirements.txt
 Sensors do not provide accurate results out of the box. If `f` details the function that outputs the accurate results and `g` represents the sensor raw data, the `c` is the callibration function such that `c ∘ g = f`. This callibration function is (roughly) defined as follow:
 
 1. Get the sensor raw data (an example of this is available in the `raspberry/data/raw_calibration_measurement.csv` file);
-2. Find the function that best fits the sensor data (find `g`);
+2. Find the function that best fit the sensor data (find `g`);
 3. Find the transform from `g` to `f` (i.e. `c`). Given that our function is linear, this is equivalent to finding the slope factor and y-intercept that separates `g` and `f`.
 4. Apply `c` to `g` at runtime, i.e. for every sensor measurement `x`, apply the slope factor `m` and y-interpect `c` such that `y = mx + c`.
 5. Send `y` to the server.
