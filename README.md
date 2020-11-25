@@ -53,7 +53,21 @@ The transformation for our captors looks as follow:
 
 
 #### Arduino
-TODO
+Prerequisites:
+1. Get an Arduino mkr WIFI 1010 
+2. Get 2 distance sensors HC-SR04
+3. Get a movement sensor PIR HC-SR501
+4. Install the following arduino libraries
+   - WIFININA - https://www.arduino.cc/en/Reference/WiFiNINA
+   - base64 - https://www.arduino.cc/reference/en/libraries/base64/
+   - Crypto - https://www.arduino.cc/reference/en/libraries/crypto/
+   - NTPClient - https://github.com/taranais/NTPClient
+
+Configure wifi connection for the arduino:
+
+1. Go into /arduino/main/ folder 
+2. Open the arduino_secrets.h file
+3. Enter your SSID and password
 
 ### Web development
 
