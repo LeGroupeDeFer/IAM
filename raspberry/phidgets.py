@@ -1,9 +1,13 @@
 #!/usr/bin/env python
+from typing import Optional
 
 from Phidget22.Devices.VoltageRatioInput import *
 import json
 from lib import sync, is_debug
 from datetime import datetime
+import logging
+
+logging.basicConfig(filename='phidgets.log', level=logging.INFO, format='[%(asctime)s] %(levelname)s\t%(message)s')
 
 # 0 : slider 60mm [P/N 1112(1)
 # 1 : temperature
@@ -26,7 +30,8 @@ def load_data():
 
 
 last_sync = datetime.now().timestamp()
-sync_interval = 5  # (sec)
+last_sync_filling_rate: Optional[float] = None
+sync_interval = 10  # (sec)
 buffered_data = reset_buffered_data()
 
 data = load_data()
@@ -63,6 +68,30 @@ def get_max_height():
     return height
 
 
+def get_min_change_for_sync():
+    global data
+    v = None
+    attempts = 0
+    while v is None or attempts < 5:
+        try:
+            attempts += 1
+            v = data['min_diff_for_sync']
+        except KeyError:
+            data = load_data()
+    if v is None:
+        v = 5
+    return v
+
+
+def is_diff_since_last_change_large_enough(value: float) -> float:
+    global last_sync_filling_rate
+    if last_sync_filling_rate is None:
+        return True
+
+    threshold = get_min_change_for_sync()
+    return abs(last_sync_filling_rate - value) > threshold
+
+
 def on_ir_change(self, sensor_value, _sensor_unit):
     global last_sync, sync_interval, buffered_data
 
@@ -85,19 +114,19 @@ def on_sharp_change(self, sensor_value, _sensor_unit):
 
     if is_debug():
         debug_info = f'[{channels[self.getChannel()]}] {sensor_value} -> {corrected_value}'
-        print(debug_info)
+        logging.debug(debug_info)
 
     if (model == '2Y0A21 F08' and sensor_value < 60) or (model == '2Y0A21 F42'):
         buffered_data[self.getChannel()].append(corrected_value)
 
 
 def send_sync_message():
-    global data, buffered_data, channels, last_sync
+    global data, buffered_data, channels, last_sync, last_sync_filling_rate
     can_max_height = get_max_height()
     if is_debug():
-        print("will send sync message")
-        print("buffered data looks like this")
-        print(f'{buffered_data}')
+        logging.info("will send sync message")
+        logging.debug("buffered data looks like this")
+        logging.debug(f'{buffered_data}')
 
     avg = 0
     c = 0
@@ -118,14 +147,21 @@ def send_sync_message():
     if len(buffered_data[5]) > 1 and sum(buffered_data[5]) > len(buffered_data) / 2:
         filling_rate = 0.99999
 
-    date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    data = {
-        'time': date_time,
-        'fillingRate': filling_rate * 100
-    }
-    sync(data)
-    buffered_data = reset_buffered_data()
-    last_sync = datetime.now().timestamp()
+    if not is_diff_since_last_change_large_enough(filling_rate * 100):
+        logging.info("Nothing will be sent because the difference between last sync is too small")
+        buffered_data = reset_buffered_data()
+        last_sync = datetime.now().timestamp()
+        pass
+    else:
+        date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        data = {
+            'time': date_time,
+            'fillingRate': filling_rate * 100
+        }
+        sync(data)
+        buffered_data = reset_buffered_data()
+        last_sync = datetime.now().timestamp()
+        last_sync_filling_rate = filling_rate * 100
 
 
 def main():
@@ -147,9 +183,7 @@ def main():
     sharp_distance_sensor_right.openWaitForAttachment(5000)
     sharp_distance_sensor_right.setSensorType(VoltageRatioSensorType.SENSOR_TYPE_1101_SHARP_2Y0A21)
 
-    try:
-        input("Press Enter to Stop\n")
-    except (Exception, KeyboardInterrupt):
+    while True:
         pass
 
     ir_reflective_sensor.close()
@@ -157,4 +191,14 @@ def main():
     sharp_distance_sensor_right.close()
 
 
-main()
+def super_robust_main():
+    """
+    kind of ugly way to be certain that the app is always running
+    """
+    try:
+        main()
+    except Exception:
+        super_robust_main()
+
+
+super_robust_main()
