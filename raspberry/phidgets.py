@@ -135,7 +135,8 @@ def send_sync_message():
         if len(values) > 0:
             c += 1
             avg += sum(values) / len(values)
-    avg = avg / c
+
+    avg = 0.00000000001 if c == 0 else avg / c
 
     # get the filling rate between 0 and 1
     filling_rate = (can_max_height - avg) / can_max_height
