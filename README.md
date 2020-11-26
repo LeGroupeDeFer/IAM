@@ -37,39 +37,19 @@ pip install -r requirements.txt
 
 ##### Callibration
 
-Each and every sensor, even the most precise ones, have to be callibrated.
-They cannot provide accurate result out of the box.
+Sensors do not provide accurate results out of the box. If `f` details the function that outputs the accurate results and `g` represents the sensor raw data, `c` is the callibration function such that `c ∘ g = f`. This callibration function is (roughly) defined as follow:
 
-So one must take measurement of the output of the sensor depending on the real value that is measured.
+1. Get the sensor raw data (an example of this is available in the `raspberry/data/raw_calibration_measurement.csv` file);
+2. Find the function that best fit the sensor data (find `g`);
+3. Find the transform from `g` to `f` (i.e. `c`). Given that our function is linear, this is equivalent to finding the slope factor and y-intercept that separates `g` and `f`.
+4. Apply `c` to `g` at runtime, i.e. for every sensor measurement `x`, apply the slope factor `m` and y-interpect `c` such that `y = mx + c`.
+5. Send `y` to the server.
 
-You can find an exemple of this kind of measurement in the file `raspberry/data/raw_calibration_measurement.csv`.
+The `raspberry/calibration.py` (and its output `raspberry/parameters.json`) detail steps 2 and 3. Step 4 is realised in the `get_corrected_value` function in `raspberry/phidgets.py` by loading the `raspberry/parameters.json` file.
 
-Generally the sensors do respect some kind of proportionality between the real and measured unit (distance in this case).
-So we just have to find the best fitting line in all the points that comes from the measurement.
-
-You can find a python script that does that in the file `raspberry/calibration.py`.
-
-Additionnaly, this script produce a graph of the measured data and the best fitting line and put the parameters in a file `parameters.json`.
+The transformation for our captors looks as follow:
 
 ![graph](raspberry/data/calibration_measurement.png)
-
-Once the parameters of the line has been extracted (slope and y position at origin), you can use it to correct the sensor values.
-
-So if 
-
-```
-f(x) = m * x + c
-```
-
-and we have `y`, `m` and `c`, we need to isolate `x`
-
-```
-x = (y - c)/m
-```
-
-In python this could be written as
-
-
 
 
 #### Arduino
