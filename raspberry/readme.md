@@ -41,7 +41,7 @@ openssl rsa -in rsa.private -out rsa.public -pubout -outform PEM
 
 ## autostart
 
-To be certain that the script is launched at the raspberry boot, you have to edit the cron jobs with a custom command.
+To be certain that the script is launched at the raspberry boot, you have to create a service and enable it at boot.
 
 So first create a script that will be our entrypoint with `vim /home/taz/playground/exec_phidgets_iot.sh`
 
