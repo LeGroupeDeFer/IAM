@@ -6,8 +6,11 @@ import json
 from lib import sync, is_debug
 from datetime import datetime
 import logging
+import os
 
-logging.basicConfig(filename='phidgets.log', level=logging.INFO, format='[%(asctime)s] %(levelname)s\t%(message)s')
+log_path = '{}/{}'.format(os.path.dirname(os.path.abspath(__file__)), 'phidgets.log')
+
+logging.basicConfig(filename=log_path, level=logging.INFO, format='[%(asctime)s] %(levelname)s\t%(message)s')
 
 # 0 : slider 60mm [P/N 1112(1)
 # 1 : temperature
@@ -25,7 +28,8 @@ def reset_buffered_data() -> dict:
 
 
 def load_data():
-    with open('parameters.json') as json_file:
+    parameter_path = '{}/{}'.format(os.path.dirname(os.path.abspath(__file__)), 'parameters.json')
+    with open(parameter_path) as json_file:
         return json.load(json_file)
 
 
