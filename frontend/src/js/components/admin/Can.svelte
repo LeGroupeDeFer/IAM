@@ -9,9 +9,8 @@
   let copy = { ...can };
 
   const dispatch = createEventDispatcher();
-  const remove = () => dispatch("remove", { id: can.id });
 
-  async function updateCan() {
+  async function update() {
     try {
       await api.admin.update(
         can.id,
@@ -28,20 +27,30 @@
       dispatch("error", { error });
     }
   }
+
+  async function remove() {
+    try {
+      await api.admin.delete(can.id);
+      dispatch("remove", { id: can.id });
+    } catch (error) {
+      console.error(error);
+      dispatch("error", { error });
+    }
+  }
 </script>
 
 <tr>
   <th scope="row">
-    <TextInput on:blur={updateCan} bind:text={copy.id} />
+    <TextInput on:blur={update} bind:text={copy.id} />
   </th>
   <td>
-    <TextInput on:blur={updateCan} bind:text={copy.longitude} />
+    <TextInput on:blur={update} bind:text={copy.longitude} />
   </td>
   <td>
-    <TextInput on:blur={updateCan} bind:text={copy.latitude} />
+    <TextInput on:blur={update} bind:text={copy.latitude} />
   </td>
   <td>
-    <TextInput on:blur={updateCan} bind:text={copy.signProtocol} />
+    <TextInput on:blur={update} bind:text={copy.signProtocol} />
   </td>
   <td>
     <Button outline color="danger" size="sm" on:click={remove}>Delete</Button>
