@@ -1,7 +1,14 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
-  import { Card, CardBody, CardHeader, CardText, CardTitle } from "sveltestrap";
+  import {
+    Card,
+    CardBody,
+    CardHeader,
+    CardText,
+    CardTitle,
+    Spinner,
+  } from "sveltestrap";
   import { api } from "../../lib";
   import FillingInfo from "./FillingInfo.svelte";
   import RequestsInfo from "./RequestsInfo.svelte";
@@ -57,6 +64,11 @@
     right: 10px;
     cursor: pointer;
   }
+  .center {
+    position: relative;
+    padding: 2rem;
+    padding-left: 45%;
+  }
 </style>
 
 <div class="container">
@@ -69,7 +81,11 @@
     </CardHeader>
     <CardBody>
       <CardText>
-        {#await data then can}
+        {#await data}
+          <div class="center">
+            <Spinner type="grow" />
+          </div>
+        {:then can}
           <DumpingInfo {can} />
           <hr />
           <RequestsInfo {can} />
