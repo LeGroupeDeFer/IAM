@@ -27,6 +27,13 @@
       left: 2px;
       max-height: 85%;
       overflow: scroll;
+      /* Hide scrollbar for IE, Edge and Firefox */
+      -ms-overflow-style: none; /* IE and Edge */
+      scrollbar-width: none; /* Firefox */
+    }
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .container::-webkit-scrollbar {
+      display: none;
     }
   }
   /* Larger screens */
