@@ -25,6 +25,8 @@
       top: 2px;
       right: 2px;
       left: 2px;
+      max-height: 85%;
+      overflow: scroll;
     }
   }
   /* Larger screens */
