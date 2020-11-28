@@ -5,7 +5,7 @@
   import FillingInfo from "./CanInformation/FillingInfo.svelte";
   import RequestsInfo from "./CanInformation/RequestsInfo.svelte";
   import DumpingInfo from "./CanInformation/DumpingInfo.svelte";
-  import Container from "./Container.svelte";
+  import Container from "../overall/Container.svelte";
 
   export let can;
 
