@@ -1,7 +1,8 @@
 <script>
   import Map from "../../components/dashboard/Map.svelte";
-  import CanInformation from "../../components/dashboard/CanInformation.svelte";
   import CanMarker from "../../components/dashboard/CanMarker.svelte";
+  import CanItinerary from "../../components/dashboard/CanItinerary.svelte";
+  import CanInformation from "../../components/dashboard/CanInformation.svelte";
   import { api } from "../../lib";
   import {
     Button,
@@ -50,6 +51,7 @@
           bind:can={selectedCan}
           on:close={() => (selectedCan = undefined)} />
       {/if}
+      <CanItinerary />
     {:catch _}
       <div class="center">
         <Card>

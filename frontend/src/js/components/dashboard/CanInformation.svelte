@@ -33,9 +33,7 @@
 </style>
 
 <Container on:close={close}>
-  <span slot="title">
-    <h5>{can ? can.id : 'tamer'}</h5>
-  </span>
+  <h5 slot="title">{can ? can.id : 'tamer'}</h5>
 
   <div slot="body">
     {#await data}
