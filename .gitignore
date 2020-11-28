@@ -47,6 +47,8 @@ public/master.css
 # runtime
 log/
 **/logback.xml
+frontend/public/master.css
+backend/http/http-client.env.json
 
 # arduino
 arduino/keygen/keys

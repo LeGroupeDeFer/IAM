@@ -11,8 +11,8 @@
 #include "arduino_secrets.h"
 
 //Keys for signature
-uint8_t privateKey[32] = { 48, 155, 26, 148, 131, 72, 236, 190, 62, 34, 183, 69, 26, 220, 9, 110, 239, 207, 31, 226, 18, 183, 2, 242, 251, 171, 106, 64, 85, 233, 60, 114 };
-uint8_t publicKey[32] = { 242, 130, 36, 56, 13, 244, 176, 84, 233, 92, 182, 134, 168, 73, 136, 163, 20, 69, 225, 236, 140, 138, 23, 106, 51, 51, 128, 55, 184, 183, 63, 102 };
+uint8_t privateKey[32] = { 0, 138, 111, 202, 144, 111, 169, 80, 51, 166, 8, 31, 91, 135, 157, 146, 40, 90, 77, 138, 38, 196, 225, 172, 31, 198, 75, 202, 177, 5, 33, 201 };
+uint8_t publicKey[32] =  { 191, 72, 151, 219, 116, 19, 157, 91, 157, 107, 61, 193, 53, 238, 146, 68, 142, 19, 113, 236, 173, 5, 82, 47, 210, 156, 50, 174, 198, 36, 108, 66 };
 
 uint8_t signature[64];
 
@@ -142,7 +142,7 @@ void loop() {
 
 
 void setPayload(float distance, String date) {
-  String data = "{\"time\":\"" + date + "\",\"fillingRate\":\"" + String(distance) + "\"}";
+  String data = "{\"time\":\"" + date + "\",\"fillingRate\":" + String(distance) + "}";
   
   Ed25519::sign(signature, privateKey, publicKey, (uint8_t*)data.c_str(), data.length());
 
@@ -168,7 +168,7 @@ void sendPostRequest() {
 
     client.print   // any spaces are important
     (
-      String("POST ") + "/api/can/test/sync" + " HTTP/1.1\r\n" +
+      String("POST ") + "/api/can/eddsatest/sync" + " HTTP/1.1\r\n" +
       "Host: " + "192.168.0.42" + "\r\n" + // it works with an other Host ip... and without this line
       "Content-Type: application/json\r\n" +
       "Content-Length: " + postData.length() + "\r\n" + //this line is needed with the exact size value

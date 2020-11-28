@@ -6,6 +6,7 @@ import os
 import json
 import rsa
 import requests
+import logging
 
 
 class ConfigurationException(Exception):
@@ -69,7 +70,7 @@ def sign(data: bytes) -> bytes:
     with open(get_config('private_key_path'), mode='rb') as pk_file:
         key_data = pk_file.read()
         private_key = rsa.PrivateKey.load_pkcs1(key_data)
-    print(data)
+    logging.debug(f'sign (data) : {data}')
     signed_data = rsa.sign(data, private_key, 'SHA-512')
     signed_encoded_data = base64.b64encode(signed_data)
     return signed_encoded_data
@@ -91,6 +92,10 @@ def sync(data: dict) -> None:
     :param data: the data to be sent as json
     :return: None
     """
+    if is_debug():
+        logging.info("sending data to server")
+        logging.debug(f'sync (data) : {data}')
+
     data_as_json = purify(json.dumps(data))
 
     signature = sign(data_as_json).decode("utf-8")
@@ -105,4 +110,4 @@ def sync(data: dict) -> None:
     headers = {'Content-type': 'application/json'}
     v = requests.post(get_config('sync_endpoint'), signed_data_as_json, headers=headers)
     if is_debug():
-        print(v.content)
+        logging.info(f'sync response : {v.content}')

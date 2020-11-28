@@ -39,6 +39,49 @@ openssl genrsa -out rsa.private 2048
 openssl rsa -in rsa.private -out rsa.public -pubout -outform PEM
 ```
 
+## autostart
+
+To be certain that the script is launched at the raspberry boot, you have to create a service and enable it at boot.
+
+So first create a script that will be our entrypoint with `vim /home/taz/playground/exec_phidgets_iot.sh`
+
+```
+#!/bin/bash
+
+python /home/taz/playground/phidgets.py
+```
+Then you want to make that file executable with `chmod +x /home/taz/playground/.sh` 
+
+Then you need to create a service, create a new file `vim /etc/systemd/system/phidget.service`
+
+```
+[Unit]
+Description=IAM phidgets can thingy
+
+[Service]
+ExecStart=/home/taz/playground/exec_phidgets_iot.sh
+Restart=on-failure
+RestartSec=10
+User=taz
+WorkingDirectory=/home/taz/playground
+
+[Install]
+WantedBy=multi-user.target
+```
+
+After that you may want to
+ 
+- check that the service is syntactically correct with `systemctl daemon-reload`
+- check that the service can be launched with `systemctl start phidget`
+- check the status of the service with `systemctl status phidget`
+
+And finally you can enable the service at the boot of your server with
+```
+systemctl enable phidget
+```
+You also may want to test that everything is working as intended by rebooting your raspberry.
+
+
 ## Files
 
 ### `.env`

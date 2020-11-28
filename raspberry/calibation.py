@@ -49,6 +49,7 @@ plt.show()
 
 data = {
     'can_max_height': 100,
+    'min_diff_for_sync': 5,
     '2Y0A21 F42': {
         'm': m_42,
         'c': c_42
