@@ -1,7 +1,7 @@
 <script>
   import Slider from "../../overall/Slider.svelte";
 
-  let fillValue = 0;
+  export let fillValue = 0;
 </script>
 
 <style>

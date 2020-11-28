@@ -3,8 +3,15 @@
   import FillingInput from "./FillingInput.svelte";
   import PositionInput from "./PositionInput.svelte";
 
+  let disabled;
+  let fillValue;
+  let longitude, latitude;
+
+  $: disabled = !(longitude && latitude);
+
   function drawItinerary() {
-    console.log("TODO")
+    //TODO
+    console.log("TODO");
   }
 </script>
 
@@ -15,10 +22,10 @@
   }
 </style>
 
-<PositionInput />
+<PositionInput bind:latitude bind:longitude />
 <hr />
-<FillingInput />
+<FillingInput {fillValue} />
 <hr />
 <div class="center">
-  <Button on:click={drawItinerary}>Calculate</Button>
+  <Button {disabled} on:click={drawItinerary}>Calculate</Button>
 </div>
