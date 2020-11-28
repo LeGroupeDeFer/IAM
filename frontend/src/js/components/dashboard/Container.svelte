@@ -1,34 +1,12 @@
 <script>
   import { createEventDispatcher } from "svelte";
-
-  import {
-    Card,
-    CardBody,
-    CardHeader,
-    CardText,
-    CardTitle,
-    Spinner,
-  } from "sveltestrap";
-  import { api } from "../../lib";
-  import FillingInfo from "./FillingInfo.svelte";
-  import RequestsInfo from "./RequestsInfo.svelte";
-  import DumpingInfo from "./DumpingInfo.svelte";
-
-  export let can;
-
-  let data;
+  import { Card, CardBody, CardHeader, CardText, CardTitle } from "sveltestrap";
 
   const dispatch = createEventDispatcher();
 
   function close() {
-    dispatch("close", {});
+    dispatch("close");
   }
-
-  async function retrieveFillingRates(id) {
-    return await api.can(id);
-  }
-
-  $: can, (data = retrieveFillingRates(can.id));
 </script>
 
 <style>
@@ -64,34 +42,19 @@
     right: 10px;
     cursor: pointer;
   }
-  .center {
-    position: relative;
-    padding: 2rem;
-    padding-left: 45%;
-  }
 </style>
 
 <div class="container">
   <Card>
     <CardHeader>
       <CardTitle>
-        <h5>{can.id}</h5>
+        <slot name="title" />
       </CardTitle>
       <div class="close-button" on:click={close}><span>&times;</span></div>
     </CardHeader>
     <CardBody>
       <CardText>
-        {#await data}
-          <div class="center">
-            <Spinner type="grow" />
-          </div>
-        {:then can}
-          <DumpingInfo {can} />
-          <hr />
-          <RequestsInfo {can} />
-          <hr />
-          <FillingInfo {can} />
-        {/await}
+        <slot name="body" />
       </CardText>
     </CardBody>
   </Card>

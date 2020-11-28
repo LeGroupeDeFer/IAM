@@ -1,5 +1,5 @@
 <script>
-  import Alert from "./CustomAlert.svelte";
+  import Alert from "../../overall/CustomAlert.svelte";
 
   export let can;
 

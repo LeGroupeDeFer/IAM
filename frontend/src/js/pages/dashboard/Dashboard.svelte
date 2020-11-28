@@ -1,6 +1,6 @@
 <script>
   import Map from "../../components/dashboard/Map.svelte";
-  import Information from "../../components/dashboard/Information.svelte";
+  import CanInformation from "../../components/dashboard/CanInformation.svelte";
   import CanMarker from "../../components/dashboard/CanMarker.svelte";
   import { api } from "../../lib";
   import {
@@ -46,7 +46,7 @@
         <CanMarker {can} on:click={(e) => (selectedCan = e.detail.can)} />
       {/each}
       {#if selectedCan}
-        <Information
+        <CanInformation
           bind:can={selectedCan}
           on:close={() => (selectedCan = undefined)} />
       {/if}
