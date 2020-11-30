@@ -13,7 +13,7 @@ async function direction(points) {
     const request =
         `${api}/optimized-trips/v1/mapbox/driving/` +
         `${start};${intermediates}` +
-        `?access_token=${mapbox.accessToken}`;
+        `?geometries=geojson&access_token=${mapbox.accessToken}`;
 
     const response = await fetch(request);
     if (response.ok) return await response.json();

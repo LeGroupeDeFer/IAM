@@ -1,16 +1,21 @@
 <script>
-  import { direction } from "../../../lib/mapbox.js";
+  import { getContext } from "svelte";
+  import { key, direction } from "../../../lib/mapbox.js";
   import { Button } from "sveltestrap";
   import FillingInput from "./FillingInput.svelte";
   import PositionInput from "./PositionInput.svelte";
 
   export let cans;
 
+  const { getMap } = getContext(key);
+  const map = getMap();
+
   let disabled;
   let fillValue;
   let longitude, latitude;
 
   $: disabled = !(longitude && latitude);
+  $: longitude, latitude, !disabled && drawItinerary();
 
   async function drawItinerary() {
     try {
@@ -19,10 +24,41 @@
         selectCans().map((can) => [can.longitude, can.latitude]),
       ];
       const answer = await direction(destinations);
-      console.log(answer);
-      // TODO : do something with the response
+      const geojson = {
+        type: "Feature",
+        properties: {},
+        geometry: {
+          type: "LineString",
+          coordinates: answer.trips["0"].geometry.coordinates,
+        },
+      };
+
+      if (map.getSource("route")) {
+        map.getSource("route").setData(geojson);
+      } else {
+        map.addLayer({
+          id: "route",
+          type: "line",
+          source: {
+            type: "geojson",
+            data: {
+              type: "Feature",
+              properties: {},
+              geometry: {
+                type: "LineString",
+                coordinates: geojson,
+              },
+            },
+          },
+          paint: {
+            "line-color": "#546A7B", // our primary color
+            "line-width": 3,
+            "line-opacity": 0.75,
+          },
+        });
+      }
     } catch (error) {
-      console.error(error)
+      console.error(error);
       // TODO : display the Notification component
     }
   }
