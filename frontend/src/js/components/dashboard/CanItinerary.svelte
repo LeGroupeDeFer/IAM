@@ -3,6 +3,8 @@
   import Container from "../overall/Container.svelte";
   import Inputs from "./CanItinerary/Inputs.svelte";
 
+  export let cans;
+
   let isOpen = false;
 </script>
 
@@ -20,7 +22,7 @@
   <Container on:close={() => (isOpen = false)}>
     <h5 slot="title">Calculate an itinerary</h5>
     <div slot="body">
-      <Inputs />
+      <Inputs {cans} />
     </div>
   </Container>
 {:else}

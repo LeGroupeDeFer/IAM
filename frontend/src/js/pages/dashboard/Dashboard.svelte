@@ -51,7 +51,7 @@
           bind:can={selectedCan}
           on:close={() => (selectedCan = undefined)} />
       {/if}
-      <CanItinerary />
+      <CanItinerary {cans} />
     {:catch _}
       <div class="center">
         <Card>
