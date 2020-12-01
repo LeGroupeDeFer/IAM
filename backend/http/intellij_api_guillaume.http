@@ -1,0 +1,117 @@
+# @name apiTest
+
+
+POST {{server}}/api/auth/register
+Accept: application/json
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "username": "guillaume",
+  "password": "guillaume"
+}
+
+
+########
+
+GET {{server}}/admin/api/noodles
+Accept: text/plain
+Cache-Control: no-cache
+
+### ------------------------------------------------------------ LOGIN SUCCESS
+
+POST {{server}}/api/auth/login
+Accept: application/json
+Cache-Control: no-cache
+Content-Type: application/json
+
+
+{
+  "username": "guillaume",
+  "password": "guillaume"
+}
+
+
+> {%
+    client.global.set("refresh_token", response.body.token);
+%}
+
+### ------------------
+
+POST {{server}}/api/auth/refresh
+Accept: application/json
+Cache-Control: no-cache
+
+
+{ "username": "guillaume", "token": "{{refresh_token}}" }
+
+
+> {%
+    client.global.set("access_token", response.body.access);
+    client.global.set("refresh_token", response.body.refresh);
+
+%}
+
+### --------------------
+
+POST {{server}}/api/admin/can/
+Content-Type: application/json
+Cache-Control: no-cache
+Authorization: Bearer {{access_token}}
+
+{
+  "id": "whalla",
+  "latitude": 50.457758,
+  "longitude": 4.851422,
+  "publicKey": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCYRSKRffqYuTeEnFrtdaOh9CIzkdSIj+NMmmTr91BcZtR7L9F6kw6MagwYpgA6BcnAfMOiiX98xI5mBV/FRISnLRlFORqktM0HAmqfabIrAXjyct975HVuYsGWXLXiBjBY9khvNKMy5XvEp/rvPMMq0x47uPICNZKWfRxnfh3PLP3oWG+H/3LJCNh8K/qm2IR59pHnoNZQusRrdFoSJj/OU2SKQXdPJYCm5jjGDwI5CzbzTkWiOz0DF5YlsknxcBL4s8mNNu1AEXH1o3BJWXtJGmBI2Na7kyYpMjZDbCpK9QNPbqT/jExvIYXoDbpYHtkjLel5DWG6i3PxqPVPxPHP taz@taztower",
+  "signProtocol": "rsa"
+}
+
+> {%
+ client.test("Request", function (){
+     client.assert(true)
+ })
+ %}
+
+###
+POST {{server}}/api/can/whalla/sync
+Content-Type: application/json
+Cache-Control: no-cache
+Authorization: Bearer {{access_token}}
+
+{
+  "signature": "whalla",
+  "data": {
+    "time": "2020-11-04 08:47:25",
+    "fillingRate": 42.69
+  }
+}
+
+> {%
+ client.test("Request", function (){
+     client.assert(true)
+ })
+ %}
+
+### --------------------------
+
+PUT {{server}}/api/admin/can/coucouloucoucoupaloma
+Content-Type: application/json
+Cache-Control: no-cache
+Authorization: Bearer {{access_token}}
+
+{
+  "id": "coucouloucoucoupaloma",
+  "latitude": 50.457758,
+  "longitude": 4.851422,
+  "publicKey": "wallahahaa"
+}
+
+
+### ----------
+
+DELETE {{server}}/api/admin/can/coucouloucoucoupaloma
+Content-Type: application/json
+Cache-Control: no-cache
+Authorization: Bearer {{access_token}}
+
