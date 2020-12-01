@@ -1,7 +1,6 @@
 <script>
-  import { getContext } from "svelte";
+  import { getContext, onDestroy } from "svelte";
   import { key, direction } from "../../../lib/mapbox.js";
-  import { Button } from "sveltestrap";
   import FillingInput from "./FillingInput.svelte";
   import PositionInput from "./PositionInput.svelte";
 
@@ -10,12 +9,12 @@
   const { getMap } = getContext(key);
   const map = getMap();
 
-  let disabled;
   let fillValue;
-  let longitude, latitude;
+  // Champion container park
+  let latitude = 50.487769;
+  let longitude = 4.904418;
 
-  $: disabled = !(longitude && latitude);
-  $: longitude, latitude, !disabled && drawItinerary();
+  $: longitude, latitude, drawItinerary();
 
   async function drawItinerary() {
     try {
@@ -56,6 +55,7 @@
             "line-opacity": 0.75,
           },
         });
+        map.getSource("route").setData(geojson);
       }
     } catch (error) {
       console.error(error);
@@ -64,22 +64,29 @@
   }
 
   function selectCans() {
-    //TODO : Make a selection considering the truck current filling
+    // Dumb algorithm :
+    // a truck can have 10 cans in its container (small trcks you know)
+    //
+    // sort : We will sort the cans in descending order based on their filling
+    //
+    // map : If the truck has enough space, take it
+    //       Else take as much as possible with the lesser filled cans
+    selection = { ...cans };
+    fillingAfter = fillValue * 10; // max is 10
+    selection
+      .sort((a, b) => b.currentFill - a.currentFill)
+      .filter((can) => fillingAfter + can.currentFill <= 10);
     return cans;
   }
-</script>
 
-<style>
-  .center {
-    width: 100%;
-    text-align: center;
-  }
-</style>
+  onDestroy(() => {
+    if (map.getSource("route")) {
+      map.removeLayer("route");
+      map.removeSource("route");
+    }
+  });
+</script>
 
 <PositionInput bind:latitude bind:longitude />
 <hr />
 <FillingInput {fillValue} />
-<hr />
-<div class="center">
-  <Button {disabled} on:click={drawItinerary}>Calculate</Button>
-</div>

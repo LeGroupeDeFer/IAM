@@ -3,24 +3,26 @@
   import { mapbox, key } from "../../../lib/mapbox.js";
 
   export let longitude, latitude;
-  
+
   const { getMap } = getContext(key);
   const map = getMap();
 
   let marker;
 
-  map.on("click", function (e) {
+  function placeMarker(e) {
     longitude = e.lngLat.lng;
     latitude = e.lngLat.lat;
     marker && marker.remove();
     marker = new mapbox.Marker({ color: "#BDE4A7" })
       .setLngLat([longitude, latitude])
       .addTo(map);
-  });
+  }
+
+  map.on("click", placeMarker);
 
   onDestroy(() => {
-    map.on("click", () => {});
-    marker.remove();
+    map.off("click", placeMarker);
+    marker && marker.remove();
   });
 </script>
 
