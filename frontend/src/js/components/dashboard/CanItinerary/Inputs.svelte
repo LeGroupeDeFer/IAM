@@ -14,69 +14,78 @@
   let latitude = 50.487769;
   let longitude = 4.904418;
 
-  $: longitude, latitude, drawItinerary();
+  $: longitude, latitude, fillValue, handleItinerary();
 
-  async function drawItinerary() {
+  async function handleItinerary() {
     try {
       const destinations = [
         [longitude, latitude], // Initial position
-        selectCans().map((can) => [can.longitude, can.latitude]),
+        ...selectCans().map((can) => [can.longitude, can.latitude]),
       ];
-      const answer = await direction(destinations);
-      const geojson = {
-        type: "Feature",
-        properties: {},
-        geometry: {
-          type: "LineString",
-          coordinates: answer.trips["0"].geometry.coordinates,
-        },
-      };
 
-      if (map.getSource("route")) {
-        map.getSource("route").setData(geojson);
-      } else {
-        map.addLayer({
-          id: "route",
-          type: "line",
-          source: {
-            type: "geojson",
-            data: {
-              type: "Feature",
-              properties: {},
-              geometry: {
-                type: "LineString",
-                coordinates: geojson,
-              },
-            },
-          },
-          paint: {
-            "line-color": "#546A7B", // our primary color
-            "line-width": 3,
-            "line-opacity": 0.75,
-          },
-        });
-        map.getSource("route").setData(geojson);
+      if (destinations.length < 2) {
+        draw(getGeojson([]));
+        throw "No can can be charged into your truck...";
       }
+
+      const answer = await direction(destinations);
+      const geojson = getGeojson(answer.trips["0"].geometry.coordinates);
+      draw(geojson);
     } catch (error) {
-      console.error(error);
+      console.log(error);
       // TODO : display the Notification component
     }
   }
 
+  function getGeojson(coord) {
+    return {
+      type: "Feature",
+      properties: {},
+      geometry: {
+        type: "LineString",
+        coordinates: coord,
+      },
+    };
+  }
+
+  function draw(geojson) {
+    if (map.getSource("route")) {
+      map.getSource("route").setData(geojson);
+    } else {
+      map.addLayer({
+        id: "route",
+        type: "line",
+        source: {
+          type: "geojson",
+          data: {
+            type: "Feature",
+            properties: {},
+            geometry: {
+              type: "LineString",
+              coordinates: geojson,
+            },
+          },
+        },
+        paint: {
+          "line-color": "#546A7B", // our primary color
+          "line-width": 3,
+          "line-opacity": 0.75,
+        },
+      });
+      map.getSource("route").setData(geojson);
+    }
+  }
+
   function selectCans() {
-    // Dumb algorithm :
-    // a truck can have 10 cans in its container (small trcks you know)
-    //
-    // sort : We will sort the cans in descending order based on their filling
-    //
-    // map : If the truck has enough space, take it
-    //       Else take as much as possible with the lesser filled cans
-    selection = { ...cans };
-    fillingAfter = fillValue * 10; // max is 10
-    selection
+    let actualFill = fillValue / 10.0 ?? 0.0;
+    return cans
       .sort((a, b) => b.currentFill - a.currentFill)
-      .filter((can) => fillingAfter + can.currentFill <= 10);
-    return cans;
+      .filter((can) => {
+        if (actualFill + can.currentFill / 100.0 <= 10) {
+          actualFill += can.currentFill / 100.0;
+          return true;
+        } else return false;
+      });
   }
 
   onDestroy(() => {
@@ -89,4 +98,4 @@
 
 <PositionInput bind:latitude bind:longitude />
 <hr />
-<FillingInput {fillValue} />
+<FillingInput bind:fillValue />

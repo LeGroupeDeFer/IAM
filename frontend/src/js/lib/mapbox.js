@@ -9,7 +9,7 @@ const api = "https://api.mapbox.com";
 // points = [[longitude, latitude], ...]
 async function direction(points) {
     const start = points.shift().join(",");
-    const intermediates = points.map((x) => x.map(y => y.join(',')).join(';')).toString();
+    const intermediates = points.map((point) => point.join(',')).join(';');
     const request =
         `${api}/optimized-trips/v1/mapbox/driving/` +
         `${start};${intermediates}` +
