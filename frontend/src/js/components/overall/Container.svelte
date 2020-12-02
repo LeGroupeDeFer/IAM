@@ -1,5 +1,6 @@
 <script>
   import { createEventDispatcher } from "svelte";
+  import { fly } from "svelte/transition";
   import { Card, CardBody, CardHeader, CardText, CardTitle } from "sveltestrap";
 
   const dispatch = createEventDispatcher();
@@ -53,7 +54,7 @@
   }
 </style>
 
-<div class="container">
+<div class="container" transition:fly={{ y:50,  duration: 250 }}>
   <Card>
     <CardHeader>
       <CardTitle>

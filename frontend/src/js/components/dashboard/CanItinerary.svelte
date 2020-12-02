@@ -1,8 +1,8 @@
 <script>
+  import { fly } from "svelte/transition";
   import { Button } from "sveltestrap";
   import Container from "../overall/Container.svelte";
   import Inputs from "./CanItinerary/Inputs.svelte";
-
   export let cans;
 
   let isOpen = false;
@@ -26,7 +26,7 @@
     </div>
   </Container>
 {:else}
-  <div class="bottom">
+  <div transition:fly={{ y: 50, duration: 250 }} class="bottom">
     <Button on:click={() => (isOpen = true)}>Calculate an itinerary</Button>
   </div>
 {/if}
