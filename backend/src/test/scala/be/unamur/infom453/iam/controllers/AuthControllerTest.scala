@@ -1,7 +1,7 @@
 package be.unamur.infom453.iam.controllers
 
 import be.unamur.infom453.iam._
-import be.unamur.infom453.iam.controllers.api.AuthController.{LoginRequest, LoginResponse, RefreshRequest, RefreshResponse}
+import be.unamur.infom453.iam.controllers.api.AuthController._
 import be.unamur.infom453.iam.lib.Auth
 import be.unamur.infom453.iam.models.Ops._
 import be.unamur.infom453.iam.models.users
@@ -53,10 +53,10 @@ class AuthControllerTest extends AnyFlatSpec
     )
 
     response.statusCode must equal(200)
-    assert(response.isContentTypeJson)
+    response.isContentTypeJson must be(true)
 
     val loginResponse = decode[LoginResponse](response.message.toContentString)
-    assert(loginResponse.isRight)
+    loginResponse.isRight must be(true)
 
     loginResponse.foreach(lr => refreshToken = lr.token)
   }
@@ -79,10 +79,10 @@ class AuthControllerTest extends AnyFlatSpec
     )
 
     response.statusCode must equal(200)
-    assert(response.isContentTypeJson)
+    response.isContentTypeJson must be(true)
 
     val refreshResponse = decode[RefreshResponse](response.message.toContentString)
-    assert(refreshResponse.isRight)
+    refreshResponse.isRight must be(true)
 
     refreshResponse.foreach(rr => {
       refreshToken = rr.refresh
