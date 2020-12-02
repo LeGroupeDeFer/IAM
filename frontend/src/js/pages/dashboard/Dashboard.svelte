@@ -16,6 +16,13 @@
   let selectedCan;
   let cansRequest = api.cans.get();
 
+  let canInfoOpen = false;
+  let canItineraryOpen = false;
+  $: {
+    if (canItineraryOpen) canInfoOpen = false;
+    else if (canInfoOpen) canItineraryOpen = false;
+  }
+
   function getCans() {
     cansRequest = api.cans.get();
   }
@@ -49,9 +56,10 @@
       {#if selectedCan}
         <CanInformation
           bind:can={selectedCan}
+          bind:isOpen={canInfoOpen}
           on:close={() => (selectedCan = undefined)} />
       {/if}
-      <CanItinerary {cans} />
+      <CanItinerary {cans} bind:isOpen={canItineraryOpen} />
     {:catch _}
       <div class="center">
         <Card>

@@ -3,9 +3,9 @@
   import { Button } from "sveltestrap";
   import Container from "../overall/Container.svelte";
   import Inputs from "./CanItinerary/Inputs.svelte";
+  
   export let cans;
-
-  let isOpen = false;
+  export let isOpen = false;
 </script>
 
 <style>
