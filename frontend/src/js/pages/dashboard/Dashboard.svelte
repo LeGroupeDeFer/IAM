@@ -15,10 +15,10 @@
 
   let selectedCan;
   let cansRequest = api.cans.get();
-
   let canInfoOpen = false;
   let canItineraryOpen = false;
   $: {
+    selectedCan, (canInfoOpen = true);
     if (canItineraryOpen) canInfoOpen = false;
     else if (canInfoOpen) canItineraryOpen = false;
   }
@@ -53,10 +53,9 @@
       {#each cans as can}
         <CanMarker {can} on:click={(e) => (selectedCan = e.detail.can)} />
       {/each}
-      {#if selectedCan}
+      {#if selectedCan && canInfoOpen}
         <CanInformation
           bind:can={selectedCan}
-          bind:isOpen={canInfoOpen}
           on:close={() => (selectedCan = undefined)} />
       {/if}
       <CanItinerary {cans} bind:isOpen={canItineraryOpen} />

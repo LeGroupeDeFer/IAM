@@ -5,7 +5,7 @@
   import Inputs from "./CanItinerary/Inputs.svelte";
   
   export let cans;
-  export let isOpen = false;
+  export let isOpen;
 </script>
 
 <style>
