@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import random
+from random import uniform
 from decimal import Decimal
-
+from os.path import expanduser, isabs, join
+from json import JSONEncoder
 
 NANO    = Decimal('0.000000001')
 CENTI   = Decimal('0.01')
@@ -23,6 +24,13 @@ class MetaDict(type):
         return key in cls._items
 
 
+class DecimalEncoder(JSONEncoder):
+    def default(self, o):
+        if isinstance(o, Decimal):
+            return float(str(o))
+        return super(DecimalEncoder, self).default(o)
+
+
 def random_coordinates(
     latitude: Decimal,
     longitude: Decimal,
@@ -30,7 +38,13 @@ def random_coordinates(
 ) -> (Decimal, Decimal):
     radius = min(radius, Decimal('360'))
     radius = float(radius)
-    lat = latitude + Decimal(random.uniform(-radius, radius))
-    lon = longitude + Decimal(random.uniform(-radius, radius))
+    lat = latitude + Decimal(uniform(-radius, radius))
+    lon = longitude + Decimal(uniform(-radius, radius))
 
     return lat.quantize(NANO), lon.quantize(NANO)
+
+
+def resolve(path: str) -> str:
+    if isabs(path):
+        return path
+    return join(expanduser('~'), path)

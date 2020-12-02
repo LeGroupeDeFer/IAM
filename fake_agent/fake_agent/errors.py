@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
 
-class SubSystemException(Exception):
-    pass
-
-
 class CryptoException(Exception):
     pass
 
@@ -14,4 +10,8 @@ class ApiException(Exception):
 
 
 class ConfigurationException(Exception):
+    pass
+
+
+class AgentException(Exception):
     pass

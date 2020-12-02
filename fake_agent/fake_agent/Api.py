@@ -3,8 +3,10 @@
 from typing import Optional as Option, Dict, Any
 from decimal import Decimal
 from datetime import datetime
+from re import sub
 
-import requests
+import click
+from requests import post
 
 from .Crypto import Crypto
 from .errors import ApiException
@@ -13,12 +15,16 @@ from .lib import NANO
 
 class Api(object):
 
+    __slots__ = ['crypto', 'identifier', 'server']
+
     # ---------------------------- Dunder Methods ----------------------------
 
     def __init__(self, crypto: Crypto, identifier: str, server: str):
         self.crypto = crypto
         self.identifier = identifier
         self.server = server
+
+    # ---------------------------- Static Methods ----------------------------
 
     # --------------------------- Private Methods ----------------------------
 
@@ -36,29 +42,35 @@ class Api(object):
         headers = {}
         if token is not None:
             headers = {'Authorization': f'Bearer {token}'}
-        r = requests.post(self._uri(endpoint), json=data, headers=headers)
-        data = r.json()
+        r = post(self._uri(endpoint), json=data, headers=headers)
+
+        data = {}
+        try:  # FIXME
+            data = r.json()
+        except Exception as _:
+            pass
 
         if r.status_code >= 400:
-            raise ApiException(f"""
+            raise ApiException(sub('[ ][ ]+', '\n', f"""
                 api.register: Request to {r.url} failed.
                 Code: {r.status_code}
                 Reason: {data.get('reason', 'Not given')}
-            """)
+            """))
 
         return data
 
     # ---------------------------- Public Methods ----------------------------
 
     def sync(self, filling_rate: Decimal, time: datetime) -> None:
+        # time.astimezone().replace(microsecond=0).isoformat()
         data = {
-            'fillingRate': filling_rate.quantize(Decimal('0.01')),
-            'time': time.astimezone().replace(microsecond=0).isoformat()
+            'time': time.strftime('%Y-%m-%d %H:%M:%S'),
+            'fillingRate': filling_rate.quantize(Decimal('0.01'))
         }
 
-        self._post(f"/api/can/${self.identifier}/sync", {
+        self._post(f"/api/can/{self.identifier}/sync", {
             'data': data,
-            'signature': self.crypto.sign(data),
+            'signature': self.crypto.sign(data)
         })
 
     def register(
@@ -88,6 +100,6 @@ class Api(object):
             'id': self.identifier,
             'latitude': latitude.quantize(NANO),
             'longitude': longitude.quantize(NANO),
-            'publicKey': self.crypto.b64_public_key,
+            'publicKey': self.crypto.b64_subject_info,
             'signProtocol': 'rsa'
         }, access_token)
