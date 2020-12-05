@@ -19,7 +19,7 @@ from cryptography.hazmat.primitives.serialization.base import Encoding
 from .Crypto import Crypto
 from .Api import Api
 from .errors import AgentException
-from .lib import random_coordinates, resolve, log, pluck
+from .lib import random_coordinates, resolve, log, pluck, DecimalEncoder
 
 
 class Agent(Thread):
@@ -110,7 +110,7 @@ class Agent(Thread):
                     'mode': mode.value,
                     'position': f"{latitude}:{longitude}",
                     'speed': actual_speed
-                }))
+                }, cls=DecimalEncoder))
 
         except Exception as e:
             if not already_existed:

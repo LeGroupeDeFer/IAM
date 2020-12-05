@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import json
 from typing import Optional as Option, Dict, Any
 from decimal import Decimal
 from datetime import datetime
@@ -9,7 +10,7 @@ from requests import post
 
 from .Crypto import Crypto
 from .errors import ApiException
-from .lib import NANO, log
+from .lib import NANO, log, DecimalEncoder
 
 
 class Api(object):
@@ -47,7 +48,7 @@ class Api(object):
         headers = {}
         if token is not None:
             headers = {'Authorization': f'Bearer {token}'}
-        r = post(self._uri(endpoint), json=data, headers=headers)
+        r = post(self._uri(endpoint), data=json.dumps(data, cls=DecimalEncoder), headers=headers)
 
         content_type = r.headers.get('Content-Type', 'application/json')
         try:
