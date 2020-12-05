@@ -40,11 +40,35 @@ object CanTable {
         case xs => (xs.head._1, xs.flatMap(_._2))
       }
 
-    def delete(identifier: String): Future[Unit] = cans
-      .withIdentifier(identifier)
-      .remove
-      .execute
-      .map(modified => if (modified != 1) throw updateError else ())
+    /**
+     * Soft deleted implemented here
+     * The idea is to update the identifier of the can : <identifier>_deleted_<id> will be stored in the identifier property
+     *
+     * Then a soft delete is performed : the field <deleted_at> is filled with the current time.
+     *
+     * @param identifier : the identifier of the can we want to delete
+     * @return
+     */
+    def delete(identifier: String): Future[Unit] =
+      Can.byIdentifier(identifier)
+        .map(original => Can(
+          original.id,
+          original.identifier + "_deleted_" + original.id.get,
+          original.latitude,
+          original.longitude,
+          original.publicKey,
+          original.signProtocol))
+        .flatMap(updated => cans
+          .withIdentifier(identifier)
+          .update_identifier(updated)
+          .execute
+          .map(m => if (m != 1) throw updateError else m)
+          .map(_ => updated))
+        .flatMap(can => cans
+          .withIdentifier(can.identifier)
+          .remove
+          .execute
+          .map(modified => if (modified != 1) throw updateError else ()))
 
     /**
      * Parse all cans in the database. For each can, fetch the associated

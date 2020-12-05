@@ -74,6 +74,12 @@ Authorization: Bearer {{access_token}}
  %}
 
 ###
+DELETE {{server}}/api/admin/can/whalla
+Content-Type: application/json
+Cache-Control: no-cache
+Authorization: Bearer {{access_token}}
+
+###
 POST {{server}}/api/can/whalla/sync
 Content-Type: application/json
 Cache-Control: no-cache
