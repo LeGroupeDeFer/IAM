@@ -1,27 +1,13 @@
 <script>
   import { createEventDispatcher } from "svelte";
-
+  import { fly } from "svelte/transition";
   import { Card, CardBody, CardHeader, CardText, CardTitle } from "sveltestrap";
-  import { api } from "../../lib";
-  import FillingInfo from "./FillingInfo.svelte";
-  import RequestsInfo from "./RequestsInfo.svelte";
-  import DumpingInfo from "./DumpingInfo.svelte";
-
-  export let can;
-
-  let data;
 
   const dispatch = createEventDispatcher();
 
   function close() {
-    dispatch("close", {});
+    dispatch("close");
   }
-
-  async function retrieveFillingRates(id) {
-    return await api.can(id);
-  }
-
-  $: can, (data = retrieveFillingRates(can.id));
 </script>
 
 <style>
@@ -40,6 +26,15 @@
       top: 2px;
       right: 2px;
       left: 2px;
+      max-height: 85%;
+      overflow: scroll;
+      /* Hide scrollbar for IE, Edge and Firefox */
+      -ms-overflow-style: none; /* IE and Edge */
+      scrollbar-width: none; /* Firefox */
+    }
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .container::-webkit-scrollbar {
+      display: none;
     }
   }
   /* Larger screens */
@@ -59,23 +54,17 @@
   }
 </style>
 
-<div class="container">
+<div class="container" transition:fly={{ y:50,  duration: 250 }}>
   <Card>
     <CardHeader>
       <CardTitle>
-        <h5>{can.id}</h5>
+        <slot name="title" />
       </CardTitle>
       <div class="close-button" on:click={close}><span>&times;</span></div>
     </CardHeader>
     <CardBody>
       <CardText>
-        {#await data then can}
-          <DumpingInfo {can} />
-          <hr />
-          <RequestsInfo {can} />
-          <hr />
-          <FillingInfo {can} />
-        {/await}
+        <slot name="body" />
       </CardText>
     </CardBody>
   </Card>

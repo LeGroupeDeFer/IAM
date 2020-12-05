@@ -1,6 +1,5 @@
 <script>
-  import { Alert } from "sveltestrap";
-  import { last } from "../../lib";
+  import Alert from "../../overall/CustomAlert.svelte";
 
   export let can;
 
@@ -8,8 +7,7 @@
   let date;
 
   function getLastDump(data) {
-    // FIXME: modify backend and openapi
-    data.forEach((info) => (info.time = parseInt(info.time)));
+    data.forEach((info) => (info.time = new Date(info.time)));
     if (data.length < 1) return {};
     const lastDump = data
       .sort((a, b) => a.time - b.time)
@@ -39,7 +37,7 @@
   function getDate(data) {
     const lastDump = getLastDump(data);
     const date = lastDump.time
-      ? new Date(lastDump.time).toLocaleString()
+      ? lastDump.time.toLocaleString()
       : "No data available.";
     return date;
   }

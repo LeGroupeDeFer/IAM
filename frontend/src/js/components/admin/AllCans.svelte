@@ -1,19 +1,12 @@
 <script>
   import Can from "./Can.svelte";
   import { Table } from "sveltestrap";
-  import { api } from "../../lib";
 
   export let cans;
   export let errors;
 
   async function deleteCan(event) {
-    try {
-      await api.admin.delete(event.detail.id);
-      cans = cans.filter((can) => can.id !== event.detail.id);
-    } catch (error) {
-      console.error(error);
-      errors = [...errors, error.toString()];
-    }
+    cans = cans.filter((can) => can.id !== event.detail.id);
   }
 </script>
 

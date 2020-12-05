@@ -1,7 +1,8 @@
 <script>
   import Map from "../../components/dashboard/Map.svelte";
-  import Information from "../../components/dashboard/Information.svelte";
   import CanMarker from "../../components/dashboard/CanMarker.svelte";
+  import CanItinerary from "../../components/dashboard/CanItinerary.svelte";
+  import CanInformation from "../../components/dashboard/CanInformation.svelte";
   import { api } from "../../lib";
   import {
     Button,
@@ -14,6 +15,13 @@
 
   let selectedCan;
   let cansRequest = api.cans.get();
+  let canInfoOpen = false;
+  let canItineraryOpen = false;
+  $: {
+    selectedCan, (canInfoOpen = true);
+    if (canItineraryOpen) canInfoOpen = false;
+    else if (canInfoOpen) canItineraryOpen = false;
+  }
 
   function getCans() {
     cansRequest = api.cans.get();
@@ -45,11 +53,12 @@
       {#each cans as can}
         <CanMarker {can} on:click={(e) => (selectedCan = e.detail.can)} />
       {/each}
-      {#if selectedCan}
-        <Information
+      {#if selectedCan && canInfoOpen}
+        <CanInformation
           bind:can={selectedCan}
           on:close={() => (selectedCan = undefined)} />
       {/if}
+      <CanItinerary {cans} bind:isOpen={canItineraryOpen} />
     {:catch _}
       <div class="center">
         <Card>

@@ -41,9 +41,11 @@ object AdminController extends Guide {
     def can: Can =
       if (!isValid) throw invalidAttribute
       else Can(
-        None, this.id, this.longitude, this.latitude, this.publicKey,
+        None, this.id, this.latitude, this.longitude, this.publicKey,
         availableProtocols.find(_.code == this.signProtocol).get
       )
+
+    override def toString = s"id: $id, lon: $longitude, lat: $latitude" 
 
   }
 

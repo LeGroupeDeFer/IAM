@@ -1,5 +1,5 @@
 <script>
-  import { Alert } from "sveltestrap";
+  import Alert from "../../overall/CustomAlert.svelte";
 
   export let can;
 
@@ -7,9 +7,8 @@
   let nbRequests;
 
   function getNumberOfRequests(data) {
-    // TODO: debug once we have a working can
     const recent = data.filter(
-      (info) => info.time > Date.now() - 24 * 60 * 60 * 1000 * 2
+      (info) => new Date(info.time) > Date.now() - 24 * 60 * 60 * 1000 * 2
     );
     return recent.length;
   }

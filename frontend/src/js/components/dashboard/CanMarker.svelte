@@ -24,6 +24,5 @@
     .getElement()
     .addEventListener("click", () => dispatch("click", { can }));
 
-  // FIXME : no working
-  marker.on("mousehover", () => dispatch("click", { can }));
+  marker.getElement().style.cursor = "pointer";
 </script>
