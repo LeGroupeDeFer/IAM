@@ -1,6 +1,6 @@
 # Fake agent
 
-A simple utility meant to emulate the behavior of actual trash cans. Its main purpose is to to allow the development of backend/frontend functionalities without having to purchase/configure an actual agent.
+A simple utility meant to emulate the behavior of actual trash cans. Its main purpose is to allow the development of backend/frontend functionalities without having to purchase/configure an actual agent.
 
 ## How to
 
@@ -12,14 +12,14 @@ Creating an agent named _hermes_, located in Namur city center (BE):
 ```bash
 python3 -m fake_agent generate -h localhost --port 8000 -u john -p secret -n hermes 50.4667:4.8667:0.008
 ```
-Where `50.4667:4.8667:0.008` stands for `latitude`:`longitude`:`radius`, which imply that the generated can will be located somewhere between 50,4587, 50,4747  (latitude) and 4,8587, 4,8747 (longitude).
+Where `50.4667:4.8667:0.008` stands for `latitude`:`longitude`:`radius`, which implies that the generated can will be located somewhere between 50,4587, 50,4747  (latitude) and 4,8587, 4,8747 (longitude).
 
 ### Running an agent
 Running hermes:
 ```bash
 python3 -m fake_agent run -n hermes
 ```
-At which point the fake _hermes_ agent will be running and periodically update your server with fake filling rate information.
+At which point the fake _hermes_ agent will be running and periodically updating your server with pseudo random filling rate information.
 
 ### Generating N agents
 
