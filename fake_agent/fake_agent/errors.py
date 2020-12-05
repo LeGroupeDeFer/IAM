@@ -9,9 +9,5 @@ class ApiException(Exception):
     pass
 
 
-class ConfigurationException(Exception):
-    pass
-
-
 class AgentException(Exception):
     pass
