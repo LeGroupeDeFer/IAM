@@ -75,7 +75,7 @@ trait AdminController {
     canRequest: NewCanRequest
   ): TwitterFuture[IdResponse] = ((identifier, canRequest) match {
     case (_, cr) if !cr.isValid     => Future.failed(missingAttribute)
-    case (id, cr) if !(id == cr.id) => Future.failed(idMismatch)
+    case (id, cr) if !(id == cr.id) => cr.can.updateOnlyIdentifier(identifier).map(_ => cr)
     case (_, cr)                    => Future.successful(cr)
   }).flatMap((cr: NewCanRequest) => cr.can.update)
     .map(c => IdResponse(c.identifier))

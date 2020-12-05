@@ -60,7 +60,7 @@ object CanTable {
           original.signProtocol))
         .flatMap(updated => cans
           .withIdentifier(identifier)
-          .update_identifier(updated)
+          .updateIdentifier(updated)
           .execute
           .map(m => if (m != 1) throw updateError else m)
           .map(_ => updated))
@@ -126,6 +126,15 @@ object CanTable {
           .map(m => if (m != 1) throw updateError else m)
           .map(_ => this)
       }
+
+    def updateOnlyIdentifier(oldIdentifier: String)
+                        (implicit ec: ExecutionContext,
+                         db: Database): Future[Can] = cans
+      .withIdentifier(oldIdentifier)
+      .updateIdentifier(this)
+      .execute
+      .map(m => if (m != 1) throw updateError else m)
+      .map(_ => this)
 
     def delete(
       implicit ec: ExecutionContext,

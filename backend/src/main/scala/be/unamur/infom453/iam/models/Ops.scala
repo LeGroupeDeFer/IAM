@@ -103,13 +103,24 @@ object Ops {
     def withData =
       q.joinLeft(canSamples).on(_.id === _.canId)
 
+    def update(can: Can): DBIOAction[Int, NoStream, Effect.Write] =
+      q.map(c => (
+        c.latitude,
+        c.longitude,
+        c.publicKey,
+        c.signProtocol)
+      )
+        .update((
+          can.latitude,
+          can.longitude,
+          can.publicKey,
+          can.signProtocol.code)
+        )
+
     def insert(can: Can): DBIOAction[Int, NoStream, Effect.Write] =
       cans returning cans.map(_.id) += can
 
-    def update(can: Can): DBIOAction[Int, NoStream, Effect.Write] =
-      q.map(c => (c.latitude, c.longitude, c.publicKey)).update((can.latitude, can.longitude, can.publicKey))
-
-    def update_identifier(can: Can): DBIOAction[Int, NoStream, Effect.Write] =
+    def updateIdentifier(can: Can): DBIOAction[Int, NoStream, Effect.Write] =
       q.map(c => c.identifier).update(can.identifier)
 
     def remove: DBIOAction[Int, NoStream, Effect.Write] =
