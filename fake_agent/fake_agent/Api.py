@@ -5,24 +5,29 @@ from decimal import Decimal
 from datetime import datetime
 from re import sub
 
-import click
 from requests import post
 
 from .Crypto import Crypto
 from .errors import ApiException
-from .lib import NANO
+from .lib import NANO, log
 
 
 class Api(object):
 
-    __slots__ = ['crypto', 'identifier', 'server']
+    __slots__ = ['crypto', 'name', 'server']
 
     # ---------------------------- Dunder Methods ----------------------------
 
-    def __init__(self, crypto: Crypto, identifier: str, server: str):
+    def __init__(
+        self, crypto: Crypto,
+        name: str,
+        host: str,
+        port: int,
+        ssl: bool
+    ):
         self.crypto = crypto
-        self.identifier = identifier
-        self.server = server
+        self.name = name
+        self.server = f"http{'s' if ssl else ''}://{host}:{port}"
 
     # ---------------------------- Static Methods ----------------------------
 
@@ -44,11 +49,11 @@ class Api(object):
             headers = {'Authorization': f'Bearer {token}'}
         r = post(self._uri(endpoint), json=data, headers=headers)
 
-        data = {}
-        try:  # FIXME
-            data = r.json()
-        except Exception as _:
-            pass
+        content_type = r.headers.get('Content-Type', 'application/json')
+        try:
+            data = r.json() if content_type.startswith('application/json') else {}
+        except:
+            data = {}
 
         if r.status_code >= 400:
             raise ApiException(sub('[ ][ ]+', '\n', f"""
@@ -61,19 +66,26 @@ class Api(object):
 
     # ---------------------------- Public Methods ----------------------------
 
-    def sync(self, filling_rate: Decimal, time: datetime) -> None:
-        # time.astimezone().replace(microsecond=0).isoformat()
+    def sync(self, filling_rate: Decimal, time: datetime) -> bool:
         data = {
             'time': time.strftime('%Y-%m-%d %H:%M:%S'),
             'fillingRate': filling_rate.quantize(Decimal('0.01'))
         }
 
-        self._post(f"/api/can/{self.identifier}/sync", {
-            'data': data,
-            'signature': self.crypto.sign(data)
-        })
+        to_sign = f"""{{"time":"{data['time']}","fillingRate":{data['fillingRate']}}}"""
+        try:
+            log(f"{self.name} - Attempting to send payload to server...")
+            self._post(f"/api/can/{self.name}/sync", {
+                'data': data,
+                'signature': self.crypto.sign(to_sign)
+            })
+            log(f"{self.name} - Success.")
+            return True
+        except ApiException:
+            log(f"{self.name} - Failure.")
+            return False
 
-    def register(
+    def publish(
         self,
         ids: (str, str),
         latitude: Decimal,
@@ -81,6 +93,7 @@ class Api(object):
     ) -> None:
         username, password = ids
 
+        log(f"{self.name} - Logging in as {ids[0]} on {self.server}")
         # Login
         r = self._post('/api/auth/login', {
             'username': username,
@@ -96,8 +109,9 @@ class Api(object):
         access_token = r['access']
 
         # Create the trash can
+        log(f"{self.name} - Registering on {self.server}")
         self._post('/api/admin/can', {
-            'id': self.identifier,
+            'id': self.name,
             'latitude': latitude.quantize(NANO),
             'longitude': longitude.quantize(NANO),
             'publicKey': self.crypto.b64_subject_info,

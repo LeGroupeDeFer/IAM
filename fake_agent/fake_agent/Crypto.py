@@ -7,7 +7,6 @@ from os.path import join
 from re import sub
 from datetime import datetime, timedelta
 
-import click
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.hashes import HashAlgorithm, SHA512
@@ -20,8 +19,7 @@ from cryptography.hazmat.primitives.serialization import (
     load_pem_public_key, load_der_private_key, load_der_public_key
 )
 from .errors import CryptoException
-from .lib import resolve, DecimalEncoder
-
+from .lib import resolve, DecimalEncoder, log
 
 PrivateKey = Union[rsa.RSAPrivateKeyWithSerialization, ed25519.Ed25519PrivateKey]
 PrivateKeyReader = Callable[[bytes], PrivateKey]
@@ -46,17 +44,17 @@ def generate_certificate(
     lifespan: int = 14
 ) -> x509.Certificate:
 
-    name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, name)])
-    alt_name = x509.DNSName(f'{name}.{hostname}')
-    san = x509.SubjectAlternativeName([alt_name])
-    constraints = x509.BasicConstraints(ca=True, path_length=0)
+    x509_name     = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, name)])
+    x509_dns_name = x509.DNSName(f'{name}.{hostname}')
+    san           = x509.SubjectAlternativeName([x509_dns_name])
+    constraints   = x509.BasicConstraints(ca=True, path_length=0)
 
-    now = datetime.now()
+    now           = datetime.now()
 
     return (
         x509.CertificateBuilder()
-            .subject_name(name)
-            .issuer_name(name)
+            .subject_name(x509_name)
+            .issuer_name(x509_name)
             .public_key(private_key.public_key())
             .not_valid_before(now)
             .not_valid_after(now + timedelta(days=lifespan))
@@ -67,7 +65,7 @@ def generate_certificate(
     )
 
 
-def remove_headers(key: bytes) -> bytes:
+def remove_pem_headers(key: bytes) -> bytes:
     return b''.join(key.splitlines()[1:-1])
 
 
@@ -94,22 +92,14 @@ class Crypto(object):
         private_key: Union[bytes, str],
         public_key: Union[bytes, str],
         certificate: Union[bytes, str],
-        key_format: Encoding = KEY_FORMAT,
+        key_format: Union[Encoding, str] = KEY_FORMAT,
         key_length: int = KEY_LENGTH,
         hash_algorithm: HashAlgorithm = HASH_ALGORITHM
     ):
-        """
-        Loads the agent PCKs key in PEM or DER format from *private_key*.
-
-        If *private_key* is a byte representation of a private key, it will be
-        loaded as is. If it is a string, an attempt will be made to read the
-        file from the *private_key* path prior to loading it.
-
-        Relative paths are resolved from the active user home.
-
-        :param private_key: The private key bytes or file path
-        """
-        self.key_format = key_format
+        if type(key_format) is Encoding:
+            self.key_format = key_format
+        else:
+            self.key_format = Encoding(key_format)
         self.key_length = key_length
         self.hash_algorithm = hash_algorithm
 
@@ -147,7 +137,7 @@ class Crypto(object):
         directory: str,
         name: str,
         key_format: Encoding
-    ) -> ((str, bytes), (str, bytes)):
+    ) -> ((str, bytes), (str, bytes), (str, bytes)):
 
         private_file = f'{name}.{key_format.name.lower()}'
         private_path = join(directory, private_file)
@@ -193,22 +183,6 @@ class Crypto(object):
         key_length: Option[int] = None,
         lifespan: int = 14
     ) -> 'Crypto':
-        """
-        Generate the *name* keypair in *directory*.
-
-        Relative paths are resolved from the active user home. If *set_active*
-        is specified, the private key will be loaded for consecutive signature
-        uses.
-
-        :param lifespan:       TODO
-        :param hash_algorithm: TODO
-        :param hostname:       TODO
-        :param name:           The keypair name
-        :param directory:      The directory in which to save the keypair.
-        :param key_format:     TODO
-        :param key_length:     TODO
-        :return: The (public, private) keypair paths
-        """
         hash_algorithm  = hash_algorithm or cls.HASH_ALGORITHM
         key_format      = key_format or cls.KEY_FORMAT
         key_length      = key_length or cls.KEY_LENGTH
@@ -220,11 +194,13 @@ class Crypto(object):
             except ValueError as e:
                 raise CryptoException(e.args[0]) from e
 
+        log(f"Generating keypair of size {key_length}")
         private = rsa.generate_private_key(
             public_exponent=65537,
             key_size=key_length,
             backend=default_backend()
         )
+        log(f"Generating certificate with name {name} valid for {lifespan} days")
         certificate = generate_certificate(
             private,
             hostname,
@@ -234,6 +210,7 @@ class Crypto(object):
         )
 
         try:
+            log(f"Saving private/public key and certificate in {directory}")
             priv, pub, cert = cls._save(
                 private, certificate, directory, name, key_format
             )
@@ -244,32 +221,23 @@ class Crypto(object):
         except IOError as e:
             raise CryptoException(f'crypto.generate: {e.strerror}')
 
-    def sign(self, data: Dict[Any, Any]) -> str:
-        """
-        Signs the payload with the agent private key. The key must have been
-        loaded prior to this function call.
-
-        :param data: The payload to be signed
-        :return: The base64 encoded signature
-        """
-
-        dump = json.dumps(data, cls=DecimalEncoder)
-        payload = sub('[\n\t\r ]', '', dump).encode('utf-8')
+    def sign(self, data: Union[str, Dict[Any, Any]]) -> str:
+        if isinstance(data, dict):
+            data = json.dumps(data, cls=DecimalEncoder)
+            payload = sub('[\n\t\r ]', '', data).encode('utf-8')
+        else:
+            payload = data.encode('utf-8')
         signature = self.private_key.sign(
             payload,
             padding.PKCS1v15(),
             SHA512()
         )
 
-        click.echo("PYTHON PAYLOAD", err=True)
-        click.echo(payload, err=True)
-        click.echo(b64encode(signature).decode('utf-8'), err=True)
-
         return b64encode(signature).decode('utf-8')
 
     @property
     def b64_private_key(self) -> str:
-        bytes = remove_headers(self.private_key.private_bytes(
+        bytes = remove_pem_headers(self.private_key.private_bytes(
             Encoding.PEM,
             PrivateFormat.PKCS8,
             NoEncryption()
@@ -286,7 +254,7 @@ class Crypto(object):
 
     @property
     def b64_subject_info(self) -> str:
-        bytes = remove_headers(self.public_key.public_bytes(
+        bytes = remove_pem_headers(self.public_key.public_bytes(
             Encoding.PEM,
             PublicFormat.SubjectPublicKeyInfo
         ))
@@ -294,5 +262,5 @@ class Crypto(object):
 
     @property
     def b64_certificate(self) -> str:
-        bytes = remove_headers(self.certificate.public_bytes(Encoding.PEM))
+        bytes = remove_pem_headers(self.certificate.public_bytes(Encoding.PEM))
         return bytes.decode('utf-8')
