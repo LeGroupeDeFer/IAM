@@ -31,6 +31,8 @@ build
 .scala_dependencies
 .cache
 .cache-main
+__pycache__/
+**/**.pyc
 
 # general
 *.class
