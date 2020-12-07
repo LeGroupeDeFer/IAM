@@ -5,6 +5,9 @@
 </script>
 
 <style>
+  .content {
+    overflow-y: scroll;
+  }
   .container {
     min-height: 75vh;
     padding-top: 5vh;
@@ -15,17 +18,19 @@
   }
 </style>
 
-<div class="container">
-  <h1 class="text-primary">Administration panel</h1>
-  <hr />
-  <AuthGuard reverse>
-    <p class="center">
-      Please,
-      <Link to="auth">authenticate</Link>
-      yourself first.
-    </p>
-  </AuthGuard>
-  <AuthGuard>
-    <Panel />
-  </AuthGuard>
+<div class="content">
+  <div class="container">
+    <h1 class="text-primary">Administration panel</h1>
+    <hr />
+    <AuthGuard reverse>
+      <p class="center">
+        Please,
+        <Link to="auth">authenticate</Link>
+        yourself first.
+      </p>
+    </AuthGuard>
+    <AuthGuard>
+      <Panel />
+    </AuthGuard>
+  </div>
 </div>
