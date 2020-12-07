@@ -1,2 +1,2 @@
 import { contextKey } from '@beyonk/svelte-mapbox';
-export { contextKey as MabBoxContext };
+export { contextKey as MapBoxContext };

@@ -1,13 +1,12 @@
 <script>
-	import { onMount, createEventDispatcher } from 'svelte';
-	import { getContext } from 'svelte';
-	import { MabBoxContext } from './context';
+	import { getContext, onMount, createEventDispatcher } from 'svelte';
+	import { MapBoxContext } from './context';
 
-	const { getMap, getMapbox } = getContext(MabBoxContext);
+	// State
+
+	const { getMap, getMapbox } = getContext(MapBoxContext);
 	const map = getMap();
 	const mapbox = getMapbox();
-	
-	// State
 
 	let marker = null;
 	let element = null;

@@ -1,5 +1,5 @@
 <script>
-  import Slider from "../../overall/Slider.svelte";
+  import Slider from 'iam/components/overall/Slider.svelte';
 
   export let fillValue = 0;
 </script>

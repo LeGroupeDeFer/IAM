@@ -42,7 +42,7 @@
     .container {
       width: 25%;
       top: 10px;
-      right: 10px;
+      left: 10px;
     }
   }
   .close-button {

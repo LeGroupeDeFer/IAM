@@ -20,7 +20,7 @@ export const head = xs =>
 export const last = xs =>
   xs && xs.length ? xs[xs.length - 1] : null;
 
-  
+
 export const tail = xs =>
   xs && xs.length ? xs.slice(1) : null;
 
@@ -57,7 +57,7 @@ export const takeUntil = p => xs => {
     if (p(x)) break;
     taken.push(x);
   }
-  return taken
+  return taken;
 }
 
 

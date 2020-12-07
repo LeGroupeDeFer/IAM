@@ -5,7 +5,7 @@
   import FillingInfo from "./CanInformation/FillingInfo.svelte";
   import RequestsInfo from "./CanInformation/RequestsInfo.svelte";
   import DumpingInfo from "./CanInformation/DumpingInfo.svelte";
-  import Container from "../overall/Container.svelte";
+  import FloatingContainer from "../overall/FloatingContainer.svelte";
 
   export let can;
 
@@ -32,8 +32,8 @@
   }
 </style>
 
-<Container on:close={close}>
-  <h5 slot="title">{can ? can.id : 'tamer'}</h5>
+<FloatingContainer on:close={close}>
+  <h5 slot="title">{can ? can.id : 'Unknown'}</h5>
 
   <div slot="body">
     {#await data}
@@ -48,4 +48,4 @@
       <FillingInfo {can} />
     {/await}
   </div>
-</Container>
+</FloatingContainer>

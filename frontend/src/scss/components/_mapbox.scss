@@ -21,3 +21,7 @@
     }
   }
 }
+
+.itinerary-marker svg > g > g:nth-of-type(2) {
+  fill: $secondary !important;
+}

@@ -11,7 +11,7 @@
   } from 'sveltestrap';
   
   import canStore from 'iam/stores/can';
-  import { Map, CanMarker } from 'iam/components/MapBox';
+  import { Map, CanMarker, Itinerary } from 'iam/components/MapBox';
   import Sidebar from './Sidebar.svelte';
 
   // State
@@ -38,11 +38,12 @@
         {#each $canStore.cans as can}
           <CanMarker can={can} />
         {/each}
+        <Itinerary />
       </Map>
       <Sidebar />
 
     {:else}
-      
+
       <div class="abs-center">
         <Card>
           <CardHeader>Something went wrong</CardHeader>
