@@ -1,23 +1,22 @@
 <script>
-  import { getContext, onDestroy } from 'svelte';
-  import { MapBoxContext } from '../context';
-  import { direction } from 'iam/lib/mapbox.js';
-  
-  import FillingInput from './FillingInput.svelte';
-  import PositionInput from './PositionInput.svelte';
+  import { getContext, onDestroy } from "svelte";
+  import { MapBoxContext } from "../context";
+  import { direction } from "iam/lib/mapbox.js";
 
+  import FillingInput from "./FillingInput.svelte";
+  import PositionInput from "./PositionInput.svelte";
 
   // Props
 
   export let cans;
 
   // State
-  
+
   const c = getContext(MapBoxContext);
-	const map = c.getMap && c.getMap();
+  const map = c.getMap && c.getMap();
 
   let fillValue;
-  
+
   // Champion container park
   let latitude = 50.487769;
   let longitude = 4.904418;
@@ -85,21 +84,23 @@
   }
 
   function selectCans() {
+    let remainingSpace = 11;
     let actualFill = fillValue / 10.0 ?? 0.0;
     return cans
       .sort((a, b) => b.currentFill - a.currentFill)
       .filter((can) => {
-        if (actualFill + can.currentFill / 100.0 <= 10) {
+        if (remainingSpace > 0 && actualFill + can.currentFill / 100.0 <= 10) {
           actualFill += can.currentFill / 100.0;
+          remainingSpace -= 1;
           return true;
         } else return false;
       });
   }
 
   onDestroy(() => {
-    if (map.getSource('route')) {
-      map.removeLayer('route');
-      map.removeSource('route');
+    if (map.getSource("route")) {
+      map.removeLayer("route");
+      map.removeSource("route");
     }
   });
 </script>
