@@ -39,19 +39,19 @@ object APIController extends Guide {
 
   object CanResponse {
 
-    def from(can: Can, canSample: Option[Seq[CanSample]]): CanResponse = {
-      val currentFill: Double = Try(canSample.map(_.maxBy(_.moment).fillingRate)) match {
-          case Success(Some(value)) => value
-          case _ => 0.0
-        }
+    def from(can: Can, canSamples: Option[Seq[CanSample]]): CanResponse = {
+      val currentFillingRate = canSamples.map(samples =>
+        if (samples.isEmpty) 0
+        else samples.maxBy(_.moment).fillingRate
+      )
       CanResponse(
         can.identifier,
         can.longitude,
         can.latitude,
         can.publicKey,
         can.signProtocol.code,
-        currentFill,
-        canSample.map(_.map(CanSampleResponse.from)).getOrElse(Seq())
+        currentFillingRate.getOrElse(0),
+        canSamples.map(_.map(CanSampleResponse.from)).getOrElse(Seq())
       )
     }
   }
@@ -84,8 +84,8 @@ trait APIController {
 
   @Endpoint(method = HttpMethod.GET, path = "/cans")
   def getAllCans: Future[Seq[CanResponse]] = Can
-    .all
-    .map(_.map(row => CanResponse.from(row, None)))
+    .allSampled
+    .map(_.map(row => CanResponse.from(row._1, Some(row._2))))
 
   @Endpoint(method = HttpMethod.GET, path = "/can/:identifier")
   def getOneCan(identifier: String): Future[CanResponse] = Can

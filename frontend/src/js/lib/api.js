@@ -336,7 +336,7 @@ Object.assign(admin, {
   },
 
   async delete(id) {
-    return admin(id, { method: "DELETE" })
+    return admin(id, { method: "DELETE" });
   },
 
   async add(id, longitude, latitude, publicKey, signProtocol) {
@@ -345,7 +345,7 @@ Object.assign(admin, {
         id, longitude, latitude, publicKey, signProtocol
       },
       method: "POST",
-    })
+    });
   }
 });
 

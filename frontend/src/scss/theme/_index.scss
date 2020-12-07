@@ -1,5 +1,3 @@
-
-
 // https://coolors.co/ca2e55-ffe0b5-8a6552-462521-bdb246
 
 $primary:     #546A7B;
@@ -9,7 +7,7 @@ $quaternary:  #FDFDFF;
 $quinary:     #393D3F;
 
 $danger:      #F71735;
-$success:     #BDE4A7;
+$success:     #A8DBA8;
 $warning:     #FFA62B;
 
 $light:       $quaternary;
@@ -48,3 +46,5 @@ $dark:        $quinary;
   color: $light;
   background-color: $dark;
 }
+
+$animation-length: 1s;

@@ -1,9 +1,6 @@
 <script>
-  import Map from "../../components/dashboard/Map.svelte";
-  import CanMarker from "../../components/dashboard/CanMarker.svelte";
-  import CanItinerary from "../../components/dashboard/CanItinerary.svelte";
-  import CanInformation from "../../components/dashboard/CanInformation.svelte";
-  import { api } from "../../lib";
+  
+  import { afterUpdate } from 'svelte';
   import {
     Button,
     Card,
@@ -11,64 +8,51 @@
     CardFooter,
     CardHeader,
     Spinner,
-  } from "sveltestrap";
+  } from 'sveltestrap';
+  
+  import canStore from 'iam/stores/can';
+  import { Map, CanMarker } from 'iam/components/MapBox';
+  import Sidebar from './Sidebar.svelte';
 
-  let selectedCan;
-  let cansRequest = api.cans.get();
-  let canInfoOpen = false;
-  let canItineraryOpen = false;
-  $: {
-    selectedCan, (canInfoOpen = true);
-    if (canItineraryOpen) canInfoOpen = false;
-    else if (canInfoOpen) canItineraryOpen = false;
-  }
+  // State
 
-  function getCans() {
-    cansRequest = api.cans.get();
-  }
+  let resizeMap = null;
+
+  // Setup
+
+  afterUpdate(() => resizeMap && resizeMap());
+
 </script>
 
-<style>
-  main {
-    display: table-row;
-    height: 100%;
-  }
+<div class="dashboard-map">
+  {#if $canStore.pending}
+  
+    <div color="primary" class="abs-center">
+      <Spinner type="grow" />
+    </div>
+  
+  {:else}
+    {#if !$canStore.error}
+      
+      <Map resize={resizeMap}>
+        {#each $canStore.cans as can}
+          <CanMarker can={can} />
+        {/each}
+      </Map>
+      <Sidebar />
 
-  .center {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    -webkit-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
-  }
-</style>
-
-<main>
-  <Map lat={50.4667} lon={4.8667} zoom={14.5}>
-    {#await cansRequest}
-      <div color="primary" class="center">
-        <Spinner type="grow" />
-      </div>
-    {:then cans}
-      {#each cans as can}
-        <CanMarker {can} on:click={(e) => (selectedCan = e.detail.can)} />
-      {/each}
-      {#if selectedCan && canInfoOpen}
-        <CanInformation
-          bind:can={selectedCan}
-          on:close={() => (selectedCan = undefined)} />
-      {/if}
-      <CanItinerary {cans} bind:isOpen={canItineraryOpen} />
-    {:catch _}
-      <div class="center">
+    {:else}
+      
+      <div class="abs-center">
         <Card>
           <CardHeader>Something went wrong</CardHeader>
           <CardBody>Server did not respond correctly...</CardBody>
           <CardFooter>
-            <Button on:click={getCans}>Try again</Button>
+            <Button on:click={canStore.refresh}>Try again</Button>
           </CardFooter>
         </Card>
       </div>
-    {/await}
-  </Map>
-</main>
+
+    {/if}
+  {/if}
+</div>

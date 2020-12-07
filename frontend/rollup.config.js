@@ -4,6 +4,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import livereload from 'rollup-plugin-livereload';
 import scss from 'rollup-plugin-scss';
 import alias from '@rollup/plugin-alias';
+import replace from '@rollup/plugin-replace';
 import { terser } from 'rollup-plugin-terser';
 
 
@@ -40,6 +41,10 @@ export default [
 			file: 'public/build/bundle.js'
 		},
 		plugins: [
+			replace({
+				__MAPBOX_TOKEN__: 'pk.eyJ1IjoidHNlcHRvbiIsImEiOiJja2dtMHpsN3kwZm9lMnJyeDZrOTE4dXBsIn0.cpbQqVR9-a5smOfR4lt3ng'
+			}),
+
 			alias({
 				entries: {
 					iam: `${__dirname}/src/js`

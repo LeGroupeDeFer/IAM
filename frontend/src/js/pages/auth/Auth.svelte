@@ -32,10 +32,10 @@
   }
 </style>
 
-<div class="content text-center">
+<div class="auth fade-in content text-center">
   <p class="text-muted my-0">v{version}</p>
   <Link>
-    <h1 class="text-primary py-0 my-0">IAM</h1>
+    <h1 class="text-secondary py-0 my-0">IAM</h1>
   </Link>
   <a href="https://github.com/LeGroupeDeFer/IAM" class="git-link">
     View on GitHub
@@ -44,7 +44,8 @@
   <hr />
   <Form
     on:success={() => navigate('/')}
-    on:error={(event) => (errors = [...errors, event.detail.error])} />
+    on:error={(event) => (errors = [...errors, event.detail.error])}
+  />
 </div>
 
 <Notification bind:messages={errors}>

@@ -51,7 +51,7 @@
     <Button
       disabled={!canLogin}
       on:click={onLogin}
-      color="primary"
+      color="secondary"
       class="d-block mx-auto">
       Login
     </Button>

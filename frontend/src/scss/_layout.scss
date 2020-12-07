@@ -1,0 +1,122 @@
+@use 'theme' as *;
+
+/* -------------------------------- GENERAL -------------------------------- */
+
+body {
+
+  max-height: 100vh;
+  overflow: hidden;
+  
+  display: flex;
+  flex-direction: column;
+
+}
+
+.font-shadow {
+  
+  text-shadow: 0 0 3px rgba(0, 0, 0, .15);
+
+}
+
+a {
+  
+  color: $secondary;
+  
+  &:hover {
+    color: $primary;
+  }
+
+}
+
+/* -------------------------------- UTILITY -------------------------------- */
+
+.abs-center {
+
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+
+}
+
+/* ------------------------------- DASHBOARD ------------------------------- */
+
+.dashboard-map {
+
+  display: flex;
+  height: 100%;
+
+}
+
+.dashboard-sidebar {
+  
+  display: flex;
+  flex-direction: column;
+
+  width: 400px;
+  height: 100%;
+  
+  margin-right: -400px;
+  padding: 1rem;
+
+  background: $light;
+
+  transition: .2s ease-in;
+
+  &.active {
+  
+    margin-right: 0;
+
+    transition: .2s ease-out;
+  
+  }
+
+  &.shift {
+    
+    // TODO
+  
+  }
+
+  &.expand {
+
+    width: 100vw;
+    
+    margin-right: 0;
+
+    transition: .2s ease-out;
+  
+  }
+
+  .sidebar-toggle {
+    
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    & > h1, h2, h3, h4, h5, h6 {
+      
+      margin: 0;
+    
+    }
+
+    & > button {
+    
+      background: transparent;
+      color: $dark;
+      border: none;
+      outline: none;
+    
+    }
+
+  }
+
+  .can-summary {
+
+    flex-grow: 1;
+
+  }
+
+}

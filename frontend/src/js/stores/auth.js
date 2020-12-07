@@ -23,9 +23,12 @@ function createAuth() {
     try {
       const token = await api.auth.login(username, password);
       set(token);
-      refreshTimeout = setTimeout(refresh, (token.exp - now() - refreshDelay) * 1000);
+      refreshTimeout = setTimeout(
+        refresh,
+        (token.exp - now() - refreshDelay) * 1000
+      );
     } catch (e) {
-      throw e;
+      throw new AuthError(e.message);
     }
   }
 

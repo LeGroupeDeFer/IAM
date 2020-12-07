@@ -10,6 +10,9 @@
     NavLink,
   } from "sveltestrap";
   import AuthGard from "../auth/AuthGuard.svelte";
+  import Icon from "svelte-awesome";
+  import { userCircle } from "svelte-awesome/icons";
+
 
   let isOpen = false;
 
@@ -19,32 +22,45 @@
 </script>
 
 <style>
-  span {
-    font-weight: 100;
-    font-size: larger;
+  h1 {
+    font-weight: bold;
+    font-size: 2.5rem;
+    margin-bottom: 0;
   }
 </style>
 
-<div use:links>
-<Navbar color="primary" dark expand="md">
-    <NavbarBrand href="/"><span>IAM</span></NavbarBrand>
+<div class="app-nav" use:links>
+  <Navbar light expand="md">
+    
+    <NavbarBrand href="/">
+      <h1 class="font-shadow">IAM</h1>
+    </NavbarBrand>
+    
     <NavbarToggler on:click={() => (isOpen = !isOpen)} />
+    
     <Collapse {isOpen} navbar expand="md" on:update={handleUpdate}>
       <Nav class="ml-auto" navbar>
         <AuthGard>
           <NavItem>
-            <NavLink href="admin">Administration</NavLink>
+            <NavLink href="/admin">
+              Administration
+            </NavLink>
           </NavItem>
           <NavItem>
-            <NavLink href="auth">Sign out</NavLink>
+            <NavLink href="/auth">
+              Sign out
+            </NavLink>
           </NavItem>
         </AuthGard>
         <AuthGard reverse>
           <NavItem>
-            <NavLink href="auth">Sign in</NavLink>
+            <NavLink href="/auth">
+              <b>Sign in</b>
+            </NavLink>
           </NavItem>
         </AuthGard>
       </Nav>
     </Collapse>
+
   </Navbar>
 </div>

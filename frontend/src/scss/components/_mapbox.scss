@@ -1,0 +1,23 @@
+@use '../theme' as *;
+
+
+.mapboxgl-marker {
+  
+  svg {
+    transition: .2s ease-in;
+  }
+
+  &:hover, &.active {
+    cursor: pointer;
+  
+    svg {
+      transform: scale(1.1, 1.1);
+
+      & > g > g:nth-of-type(2) {
+        fill: $primary;
+      }
+
+      transition: .2s ease-out;
+    }
+  }
+}
