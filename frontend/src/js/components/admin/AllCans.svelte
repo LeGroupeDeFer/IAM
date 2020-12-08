@@ -1,13 +1,15 @@
 <script>
   import Can from "./Can.svelte";
   import { Table } from "sveltestrap";
+  import canStore from 'iam/stores/can';
 
-  export let cans;
+  let cans = [];
   export let errors;
 
-  async function deleteCan(event) {
-    cans = cans.filter((can) => can.id !== event.detail.id);
-  }
+  canStore.subscribe(state => {
+    cans = state.cans;
+  });
+
 </script>
 
 <Table hover responsive>
@@ -23,9 +25,9 @@
   <tbody>
     {#each cans as can}
       <Can
-        bind:can
-        on:remove={(e) => deleteCan(e)}
-        on:error={(e) => (errors = [...errors, e.detail.error])} />
+        can={can}
+        on:error={(e) => (errors = [...errors, e.detail.error])}
+      />
     {/each}
   </tbody>
 </Table>

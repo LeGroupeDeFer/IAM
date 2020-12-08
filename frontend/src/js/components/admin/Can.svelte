@@ -1,40 +1,29 @@
 <script>
-  import TextInput from "../overall/TextEdit.svelte";
-  import { Button } from "sveltestrap";
-  import { createEventDispatcher } from "svelte";
-  import { api } from "../../lib";
+  import { createEventDispatcher } from 'svelte';
+  import { Button } from 'sveltestrap';
+  import canStore from 'iam/stores/can';
+  import TextInput from 'iam/components/overall/TextEdit.svelte';
 
   export let can;
 
-  let copy = { ...can };
+  // CHECK HERE
+  $: copy = { ...can };
 
   const dispatch = createEventDispatcher();
 
   async function update() {
     try {
-      await api.admin.update(
-        can.id,
-        copy.id,
-        parseFloat(copy.longitude),
-        parseFloat(copy.latitude),
-        copy.publicKey,
-        copy.signProtocol
-      );
-      can = { ...copy };
+      await canStore.update(copy);
     } catch (error) {
-      copy = { ...can };
-      console.error(error);
-      dispatch("error", { error });
+      dispatch('error', { error });
     }
   }
 
   async function remove() {
     try {
-      await api.admin.delete(can.id);
-      dispatch("remove", { id: can.id });
+      await canStore.remove(copy);
     } catch (error) {
-      console.error(error);
-      dispatch("error", { error });
+      dispatch('error', { error });
     }
   }
 </script>

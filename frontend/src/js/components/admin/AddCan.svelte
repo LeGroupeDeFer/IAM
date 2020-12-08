@@ -1,9 +1,8 @@
 <script>
-  import NewCanModal from "./NewCanModal.svelte";
-  import { Button } from "sveltestrap";
-  import { api } from "../../lib";
+  import { Button } from 'sveltestrap';
+  import canStore from 'iam/stores/can';
+  import NewCanModal from './NewCanModal.svelte';
 
-  export let cans;
   export let errors;
 
   let openedModal = false;
@@ -11,12 +10,9 @@
   const toggleModal = () => (openedModal = !openedModal);
 
   async function addCan(event) {
-    const { id, latitude, longitude, publicKey, signProtocol } = event.detail;
     try {
-      await api.admin.add(id, longitude, latitude, publicKey, signProtocol);
-      cans = [...cans, { id, latitude, longitude, publicKey, signProtocol }];
+      canStore.add(event.detail);
     } catch (error) {
-      console.error(error);
       errors = [...errors, error.toString()];
     }
   }
@@ -42,4 +38,5 @@
 <NewCanModal
   isOpen={openedModal}
   on:toggle={toggleModal}
-  on:addToggled={(e) => addCan(e)} />
+  on:addToggled={addCan}
+/>

@@ -46,9 +46,44 @@ function createCan() {
     update(state => ({ ...state, focus }));
   }
 
+  async function remove(can) {
+    await api.admin.delete(can.id);
+    update(state => ({
+      ...state,
+      focus: state.focus.id == can.id ? null : state.focus,
+      cans: state.cans.filter(c => c.id != can.id)
+    }));
+  }
+
+  async function updateCan(can) {
+    await api.admin.update(
+      can.id,
+      copy.id,
+      parseFloat(can.longitude),
+      parseFloat(can.latitude),
+      can.publicKey,
+      can.signProtocol
+    );
+  
+    update(state => ({
+      ...state,
+      cans: state.cans.map(c => c.id == can.id ? can : c)
+    }));
+  }
+
+  async function add(can) {
+    const { id, latitude, longitude, publicKey, signProtocol } = can;
+    await api.admin.add(id, longitude, latitude, publicKey, signProtocol);
+    
+    update(state => ({
+      ...state,
+      cans: [...state.cans, can]
+    }));
+  }
+
   refresh();
   
-  return { subscribe, focus, refresh };
+  return { subscribe, refresh, focus, remove, update: updateCan, add };
 
 }
 
