@@ -50,7 +50,7 @@ function createCan() {
     await api.admin.delete(can.id);
     update(state => ({
       ...state,
-      focus: state.focus.id == can.id ? null : state.focus,
+      focus: state.focus && state.focus.id == can.id ? null : state.focus,
       cans: state.cans.filter(c => c.id != can.id)
     }));
   }
