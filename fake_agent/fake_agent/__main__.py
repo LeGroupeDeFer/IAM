@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import re
 from os.path import join
 from typing import Optional as Option
 from decimal import Decimal
@@ -18,7 +19,6 @@ def cli() -> None:
     pass
 
 
-@cli.command()
 @click.option(
     '-n', '--name',
     help='Specify a unique agent to run.',
@@ -29,21 +29,29 @@ def cli() -> None:
     default='.fake_agent',
     help='The directory in which to load the agent(s).'
 )
+@click.option(
+    '-h', '--host',
+    help='Select only the agents belonging to a specific host.'
+)
+@cli.command()
 def run(
     name: Option[str],
     directory: str,
+    host: Option[str]
 ) -> None:
-    """Run the *agent_name* agent"""
+    """Run the specified agent(s)"""
     if name:
         agent = Agent.from_directory(join(directory, name))
+        if host and agent.host != host:
+            click.echo(f"Agent host {agent.host} does not match {host}")
+            return
         agent.start()
         agent.join()
     else:
-        manager = AgentManager(directory)
+        manager = AgentManager(directory, host)
         manager.start()
 
 
-@cli.command()
 @click.option(
     '-h', '--hostname',
     default='localhost',
@@ -90,6 +98,7 @@ def run(
     help='The number of generated agents.'
 )
 @click.argument('location')
+@cli.command()
 def generate(
     hostname: str,
     port: Option[int],
@@ -103,8 +112,8 @@ def generate(
     location: str,
 ) -> None:
     """
-    Generate a fake trash can and publish it to the specified server or
-    localhost:80 if left unspecified.
+    Generate (a) fake trash can(s) and publish it/these to the specified server
+    or localhost:80 if the server is left unspecified.
 
     LOCATION must be a 'latitude:longitude:radius' location. Specifies the
     geographical position around which the trash can shall be located.
@@ -134,6 +143,78 @@ def generate(
         click.echo(agent.name)
 
     click.echo(f"Generated {count} agents", err=True)
+
+
+@click.option(
+    '-d', '--directory',
+    default='.fake_agent',
+    help='The directory in which to load the agent(s).'
+)
+@click.option(
+    '-h', '--host',
+    help='Select only the agents belonging to a specific host'
+)
+@cli.command()
+def show(directory: str, host: Option[str]):
+    """Lists the available agents"""
+
+    host_regex = re.compile(host) if host else None
+    manager    = AgentManager(directory)
+    agents     = []
+    hosts      = []
+
+    for agent in manager.agents:
+        if host is None or host_regex.match(agent.host):
+            agents.append(agent)
+            if agent.host not in hosts:
+                hosts.append(agent.host)
+            click.echo(f"{agent.name}@{agent.host}: speed={agent.speed}")
+
+    click.echo(f"{len(agents)} agents on {len(hosts)} host(s).")
+
+
+@click.option(
+    '-d', '--directory',
+    default='.fake_agent',
+    help='The directory in which to load the agent(s).'
+)
+@click.option(
+    '-h', '--host',
+    help='Select only the agents belonging to a specific host.'
+)
+@click.option(
+    '-n', '--name',
+    help='The agent name.'
+)
+@click.option(
+    '--stale/--no-stale',
+    default=True,
+    help='Whether to consider only agents which are no longer active.'
+)
+@click.option(
+    '-u', '--username',
+    prompt=True,
+    help='Server administrator username.'
+)
+@click.option(
+    '-p', '--password',
+    prompt=True,
+    help='Server administrator password.'
+)
+@cli.command()
+def remove(directory, host, name, stale, username, password):
+    """Remove the specified agent(s)"""
+    ids = (username, password)
+    if name:
+        agent = Agent.from_directory(join(directory, name))
+        if host and agent.host != host:
+            click.echo(f"Agent host {agent.host} does not match {host}")
+            return
+        agent.remove(ids, stale)
+    else:
+        manager = AgentManager(directory, host)
+        for agent in manager.agents:
+            agent.remove(ids, stale)
 
 
 if __name__ == '__main__':

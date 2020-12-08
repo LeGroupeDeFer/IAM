@@ -6,7 +6,9 @@ class CryptoException(Exception):
 
 
 class ApiException(Exception):
-    pass
+    def __init__(self, message: str, code: int):
+        self.code = code
+        super(ApiException, self).__init__(message)
 
 
 class AgentException(Exception):

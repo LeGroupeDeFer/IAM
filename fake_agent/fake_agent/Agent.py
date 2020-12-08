@@ -18,15 +18,15 @@ from cryptography.hazmat.primitives.serialization.base import Encoding
 
 from .Crypto import Crypto
 from .Api import Api
-from .errors import AgentException
+from .errors import AgentException, ApiException
 from .lib import random_coordinates, resolve, log, pluck, DecimalEncoder
 
 
 class Agent(Thread):
 
     __slots__ = [
-        'root', 'name', 'private_key_path', 'public_key_path',
-        'certificate_path', 'crypto', 'api', 'mode', 'filling_rate', 'running'
+        'root', 'name', 'crypto', 'api', 'mode', 'filling_rate', 'running',
+        'host', 'directory'
     ]
 
     # TODO - There is specific no reason for x509 to be PEM encoded
@@ -47,16 +47,21 @@ class Agent(Thread):
         crypto: Crypto,
         api: Api,
         name: str,
+        host: str,
+        directory: str,
         mode: Mode = Mode.LINEAR,
-        speed: float = 0.5
+        speed: Decimal = Decimal('0.1'),
+        filling_rate: Decimal = Decimal('0.01')
     ):
-        self.name         = name
         self.crypto       = crypto
         self.api          = api
+        self.name         = name
+        self.host         = host
+        self.directory    = directory
         self.mode         = mode
-        self.filling_rate = Decimal(uniform(0, 100))
-        self.running      = False
         self.speed        = speed
+        self.filling_rate = filling_rate.quantize(2)
+        self.running      = False
 
         super(Agent, self).__init__()
 
@@ -99,7 +104,8 @@ class Agent(Thread):
             lat, lon, radius = location
             latitude, longitude = random_coordinates(lat, lon, radius)
             mean, delta = speed
-            actual_speed = uniform(mean, delta)
+            actual_speed = Decimal(uniform(mean, delta))
+            filling_rate = Decimal('0')
             api.publish(ids, latitude, longitude)
 
             with open(join(agent_directory, 'host'), 'w') as host_file:
@@ -109,7 +115,8 @@ class Agent(Thread):
                     'ssl': ssl,
                     'mode': mode.value,
                     'position': f"{latitude}:{longitude}",
-                    'speed': actual_speed
+                    'speed': actual_speed,
+                    'filling_rate': filling_rate
                 }, cls=DecimalEncoder))
 
         except Exception as e:
@@ -117,7 +124,16 @@ class Agent(Thread):
                 rmtree(agent_directory)
             raise AgentException('Unable to generate agent') from e
 
-        return Agent(crypto, api, name, mode, actual_speed)
+        return Agent(
+            crypto,
+            api,
+            name,
+            agent_directory,
+            host,
+            mode,
+            actual_speed,
+            filling_rate
+        )
 
     @classmethod
     def from_directory(cls, directory):
@@ -157,12 +173,21 @@ class Agent(Thread):
 
         with open(join(directory, 'host'), 'r') as host_file:
             conf = json.loads(host_file.read())
-        host, port, ssl, mode, speed = pluck(
-            conf, 'host', 'port', 'ssl', 'mode', 'speed'
+        host, port, ssl, mode, speed, filling_rate = pluck(
+            conf, 'host', 'port', 'ssl', 'mode', 'speed', 'filling_rate'
         )
         api = Api(crypto, name, host, port, ssl)
 
-        return cls(crypto, api, name, cls.Mode(mode), speed)
+        return cls(
+            crypto,
+            api,
+            name,
+            host,
+            directory,
+            cls.Mode(mode),
+            speed,
+            Decimal(filling_rate or '0').quantize(2),
+        )
 
     # --------------------------- Private Methods ----------------------------
 
@@ -188,7 +213,7 @@ class Agent(Thread):
 
                 candidate = self.filling_rate + Decimal(uniform(-2.5, 5))
                 candidate = max(Decimal('0'), min(Decimal('100'), candidate))
-                self.filling_rate = candidate
+                self.filling_rate = candidate.quantize(2)
                 log(f"{self.name} - Current filling rate: {self.filling_rate}")
 
                 success = self.api.sync(self.filling_rate, datetime.now())
@@ -202,10 +227,46 @@ class Agent(Thread):
 
     @property
     def filled(self):
-        return self.filling_rate >= Decimal('100')
+        return self.filling_rate >= Decimal('99.99')
+
+    def remove(self, ids: (str, str), stale: bool = True):
+        try:
+            log(f"Deleting {self.name}...")
+            host_version = self.api.host_version(ids)
+
+            if not stale:
+                if host_version is not None:
+                    log('Deleting distant version...')
+                    self.api.remove(ids)
+                    log('Success.')
+                log('Removing local copy...')
+                rmtree(self.directory)
+                log('Success.')
+                return
+
+            elif host_version is None:
+                log('Stale distant version, removing local copy...')
+                rmtree(self.directory)
+                log('Success.')
+                return
+
+            log('Distant version is still active!')
+
+        except ApiException as e:
+            log(f"Failure (code {e.code})")
+            return
+
+    def save(self):
+        with open(join(self.directory, 'host'), 'r+') as host_file:
+            data = json.loads(host_file.read())
+            data['filling_rate'] = self.filling_rate
+            host_file.seek(0)
+            host_file.write(json.dumps(data))
+            host_file.truncate()
 
     def run(self):
         log(f"{self.name} - Starting")
         self.running = True
         self._run_linear()
         log(f"{self.name} - Terminating")
+        self.save()
