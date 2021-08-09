@@ -3,6 +3,6 @@ chardet==3.0.4
 idna==2.10
 Phidget22==1.6.20200921
 requests==2.24.0
-urllib3==1.25.11
+urllib3==1.26.5
 rsa~=4.6
 python-dotenv~=0.14.0
